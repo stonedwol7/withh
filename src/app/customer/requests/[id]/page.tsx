@@ -10,10 +10,12 @@ import { InitialAvatar } from '@/components/shared/initial-avatar'
 import { SosButton } from '@/components/shared/sos-button'
 import { SafetyCheckin } from '@/components/shared/safety-checkin'
 import { ShareJourney } from '@/components/shared/share-journey'
+import { CardSkeleton } from '@/components/shared/skeleton'
 import { CATEGORY_ICONS, CATEGORY_LABELS, PRICING } from '@/lib/constants'
 import { format } from 'date-fns'
 import { Phone, MessageCircle, Shield, Star, CheckCircle, XCircle, Calendar, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
+import { useEffect, useState } from 'react'
 
 export default function RequestDetail() {
   const params = useParams()
@@ -26,6 +28,25 @@ export default function RequestDetail() {
   const confirmMatch = useAppStore((s) => s.confirmMatch)
   const processPayment = useAppStore((s) => s.processPayment)
   const submitRequest = useAppStore((s) => s.submitRequest)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 200)
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <div>
+        <CustomerHeader title="Support Journey" />
+        <div className="px-5 pt-6 pb-24 space-y-4">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+      </div>
+    )
+  }
 
   if (!request) {
     return (
@@ -93,9 +114,11 @@ export default function RequestDetail() {
           <ShareJourney requestId={request.id} />
         </div>
 
-        <div className="bg-card rounded-2xl border border-border p-5 mb-5 animate-fade-in">
+        <div className="bg-card rounded-2xl border border-border p-5 mb-5 animate-fade-in card-hover">
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl">{CATEGORY_ICONS[request.category]}</span>
+            <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
+              <span className="text-2xl">{CATEGORY_ICONS[request.category]}</span>
+            </div>
             <div>
               <h2 className="text-lg font-semibold text-foreground">{CATEGORY_LABELS[request.category]}</h2>
               <p className="text-sm text-muted-foreground">{format(new Date(request.date), 'EEEE, MMMM dd, yyyy')} at {request.time}</p>
@@ -117,7 +140,7 @@ export default function RequestDetail() {
         </div>
 
         {partner && match && (
-          <div className="bg-card rounded-2xl border border-border overflow-hidden mb-5 animate-fade-in">
+          <div className="bg-card rounded-2xl border border-border overflow-hidden mb-5 animate-fade-in card-hover">
             <div className="p-5">
               <h3 className="text-sm font-semibold text-foreground mb-4">Your Support Partner</h3>
 
@@ -142,7 +165,7 @@ export default function RequestDetail() {
                     {lang}
                   </span>
                 ))}
-                <span className="text-[10px] bg-accent/10 text-accent px-2 py-1 rounded-md">
+                <span className="text-[10px] bg-accent/10 text-accent px-2 py-1 rounded-md font-medium">
                   {partner.completedJourneys} journeys
                 </span>
               </div>
@@ -185,13 +208,13 @@ export default function RequestDetail() {
           <div className="flex gap-2 mb-5">
             <button
               onClick={() => router.push(`/customer/requests/${request.id}/cancel`)}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-destructive/30 text-destructive text-sm font-medium hover:bg-destructive/5 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-destructive/30 text-destructive text-sm font-medium hover:bg-destructive/5 transition-colors btn-press"
             >
               <XCircle className="w-4 h-4" /> Cancel
             </button>
             <button
               onClick={() => router.push(`/customer/requests/${request.id}/reschedule`)}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-accent/30 text-accent text-sm font-medium hover:bg-accent/5 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-accent/30 text-accent text-sm font-medium hover:bg-accent/5 transition-colors btn-press"
             >
               <Calendar className="w-4 h-4" /> Reschedule
             </button>
@@ -202,13 +225,13 @@ export default function RequestDetail() {
           <div className="flex gap-2 mb-5">
             <button
               onClick={() => router.push(`/customer/completion/${request.id}`)}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-accent/10 text-accent text-sm font-medium hover:bg-accent/20 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-accent/10 text-accent text-sm font-medium hover:bg-accent/20 transition-colors btn-press"
             >
               <Star className="w-4 h-4" /> Rate Experience
             </button>
             <button
               onClick={handleQuickRebook}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-colors btn-press"
             >
               <RotateCcw className="w-4 h-4" /> Book Again
             </button>
@@ -216,7 +239,7 @@ export default function RequestDetail() {
         )}
 
         {payment && (
-          <div className="bg-card rounded-2xl border border-border p-5 mb-5">
+          <div className="bg-card rounded-2xl border border-border p-5 mb-5 card-hover">
             <h3 className="text-sm font-semibold text-foreground mb-3">Payment</h3>
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Amount Paid</span>
@@ -228,7 +251,7 @@ export default function RequestDetail() {
           </div>
         )}
 
-        <div className="bg-card rounded-2xl border border-border p-5 mb-5">
+        <div className="bg-card rounded-2xl border border-border p-5 mb-5 card-hover">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-foreground">Journey Messages</h3>
             <button

@@ -6,7 +6,7 @@ import { useAppStore } from '@/store/use-store'
 import { UserCircle, Briefcase, Sparkles, ArrowRight, Building2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BrandMark } from '@/components/brand/brand-mark'
 
 const portals = [
   {
@@ -15,9 +15,9 @@ const portals = [
     description: 'Request support for yourself or someone you care about',
     icon: UserCircle,
     route: '/customer',
-    gradient: 'from-accent to-blue',
     color: 'text-accent',
     bg: 'bg-accent/5',
+    ring: 'ring-accent/20',
   },
   {
     id: 'partner' as const,
@@ -25,9 +25,9 @@ const portals = [
     description: 'Complete support journeys and earn',
     icon: Briefcase,
     route: '/partner',
-    gradient: 'from-green to-green/80',
     color: 'text-green',
     bg: 'bg-green/5',
+    ring: 'ring-green/20',
   },
   {
     id: 'ops' as const,
@@ -35,9 +35,9 @@ const portals = [
     description: 'Review requests, match partners, monitor supports',
     icon: Building2,
     route: '/ops',
-    gradient: 'from-purple to-purple/80',
     color: 'text-purple',
     bg: 'bg-purple/5',
+    ring: 'ring-purple/20',
   },
 ]
 
@@ -81,18 +81,20 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-5 relative z-10">
         <div className="w-full max-w-md">
           <div className="text-center mb-10 animate-fade-in">
-            <Image
-              src="/logo-stacked.png"
-              alt="WITHH"
-              width={120}
-              height={120}
-              className="mx-auto mb-6"
-              priority
-            />
-            <h1 className="text-[44px] font-bold text-foreground leading-none tracking-tight">WITHH</h1>
-            <p className="text-base text-muted-foreground mt-3 max-w-xs mx-auto leading-relaxed">
+            <div className="flex justify-center mb-8">
+              <BrandMark size={24} className="text-foreground/20" />
+            </div>
+
+            <p className="text-xl md:text-2xl text-foreground font-medium leading-relaxed max-w-sm mx-auto">
               &ldquo;When you can&apos;t go alone, we&apos;ll go with you.&rdquo;
             </p>
+
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <span className="h-px w-8 bg-border" />
+              <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-none">WITHH</h1>
+              <span className="h-px w-8 bg-border" />
+            </div>
+            <p className="text-xs text-muted-foreground/50 mt-2 tracking-widest uppercase">Human Accompaniment</p>
           </div>
 
           <div className="space-y-3.5">
@@ -109,14 +111,17 @@ export default function LoginPage() {
                 <div
                   className={`relative bg-card rounded-2xl border p-5 text-left w-full transition-all duration-300 ${
                     hovered === portal.id
-                      ? 'border-transparent shadow-xl shadow-black/5 -translate-y-0.5'
+                      ? '-translate-y-0.5 border-transparent shadow-xl shadow-black/5'
                       : 'border-border shadow-sm'
-                  }`}
+                  } ${hovered === portal.id ? portal.ring : ''}`}
                 >
-                  <div className="flex items-start gap-4">
+                  {hovered === portal.id && (
+                    <div className={`absolute inset-0 rounded-2xl opacity-5 ${portal.bg}`} />
+                  )}
+                  <div className="flex items-start gap-4 relative">
                     <div
                       className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 ${
-                        hovered === portal.id ? 'scale-110' : ''
+                        hovered === portal.id ? 'scale-110 shadow-lg' : ''
                       } ${portal.bg}`}
                     >
                       <portal.icon className={`w-7 h-7 ${portal.color}`} />

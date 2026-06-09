@@ -5,17 +5,42 @@ import { CustomerHeader } from '@/components/shared/customer-nav'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { SectionHeader } from '@/components/shared/section-header'
 import { EmptyState } from '@/components/shared/empty-state'
+import { CardSkeleton } from '@/components/shared/skeleton'
 import { useAppStore } from '@/store/use-store'
 import { CATEGORY_ICONS, CATEGORY_LABELS } from '@/lib/constants'
 import { ClipboardList, PackageOpen } from 'lucide-react'
 import { format } from 'date-fns'
+import { useEffect, useState } from 'react'
 
 export default function CustomerRequests() {
   const router = useRouter()
   const requests = useAppStore((s) => s.supportRequests)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 200)
+    return () => clearTimeout(timer)
+  }, [])
 
   const active = requests.filter((r) => !['completed', 'cancelled', 'draft'].includes(r.status))
   const completed = requests.filter((r) => r.status === 'completed')
+
+  if (!mounted) {
+    return (
+      <div>
+        <CustomerHeader title="Requests" />
+        <div className="px-5 pt-6 pb-20 space-y-4">
+          <SectionHeader title="Active" />
+          <CardSkeleton />
+          <div className="mt-8">
+            <SectionHeader title="Completed" />
+            <CardSkeleton />
+            <CardSkeleton />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -23,14 +48,15 @@ export default function CustomerRequests() {
 
       <div className="px-5 pt-6 pb-20">
         {active.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-8 animate-fade-in">
             <SectionHeader title="Active" />
             <div className="space-y-3">
-              {active.map((req) => (
+              {active.map((req, idx) => (
                 <button
                   key={req.id}
                   onClick={() => router.push(`/customer/requests/${req.id}`)}
-                  className="w-full bg-card rounded-2xl border border-border p-4 text-left hover:border-accent/30 transition-all card-hover"
+                  className="w-full bg-card rounded-2xl border border-border p-4 text-left hover:border-accent/30 transition-all card-hover animate-fade-in-up"
+                  style={{ animationDelay: `${idx * 80}ms` }}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -42,14 +68,14 @@ export default function CustomerRequests() {
                   <p className="text-xs text-muted-foreground">
                     {format(new Date(req.date), 'MMM dd, yyyy')} at {req.time}
                   </p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">{req.destination}</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1 truncate">{req.destination}</p>
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        <div>
+        <div className="animate-fade-in">
           <SectionHeader title="Completed" />
           {completed.length === 0 ? (
             <EmptyState icon={PackageOpen} title="No completed requests yet" description="Your completed support journeys will appear here" />

@@ -4,12 +4,20 @@ import { CustomerHeader } from '@/components/shared/customer-nav'
 import { useAuthStore } from '@/store/auth-store'
 import { useAppStore } from '@/store/use-store'
 import { InitialAvatar } from '@/components/shared/initial-avatar'
+import { ProfileSkeleton } from '@/components/shared/skeleton'
 import { useAccessibility } from '@/lib/accessibility-context'
 import { useI18n, langNames, type LangCode } from '@/lib/i18n-context'
 import { useRouter } from 'next/navigation'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { User, Shield, Heart, CreditCard, Clock, HelpCircle, ChevronRight, LogOut, Accessibility, Globe, Star, Users } from 'lucide-react'
+
+const menuItems = [
+  { icon: Heart, label: 'Preferences', desc: 'Support partner, language' },
+  { icon: Shield, label: 'Trusted Contacts', desc: 'Emergency contacts' },
+  { icon: CreditCard, label: 'Payment Methods', desc: 'Saved cards, UPI' },
+  { icon: HelpCircle, label: 'Terms & Privacy', desc: 'Legal, policies', href: '/terms' },
+]
 
 export default function CustomerProfile() {
   const router = useRouter()
@@ -17,9 +25,15 @@ export default function CustomerProfile() {
   const userName = useAuthStore((s) => s.userName)
   const requests = useAppStore((s) => s.supportRequests)
   const partners = useAppStore((s) => s.supportPartners)
-  const { largeText, highContrast, reducedMotion, toggleLargeText, toggleHighContrast, toggleReducedMotion } = useAccessibility()
+  const { largeText, highContrast, toggleLargeText } = useAccessibility()
   const { locale, setLocale } = useI18n()
   const [showLang, setShowLang] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 200)
+    return () => clearTimeout(timer)
+  }, [])
 
   const stats = useMemo(() => {
     const completed = requests.filter((r) => r.status === 'completed')
@@ -45,12 +59,21 @@ export default function CustomerProfile() {
       .filter(Boolean)
   }, [requests, partners])
 
+  if (!mounted) {
+    return (
+      <div>
+        <CustomerHeader title="Profile" />
+        <ProfileSkeleton />
+      </div>
+    )
+  }
+
   return (
     <div>
       <CustomerHeader title="Profile" />
 
       <div className="px-5 pt-6 pb-6">
-        <div className="bg-card rounded-2xl border border-border p-5 mb-6">
+        <div className="bg-card rounded-2xl border border-border p-5 mb-6 card-hover">
           <div className="flex items-center gap-4">
             <InitialAvatar name={userName || 'Priya Sharma'} size="lg" />
             <div>
@@ -62,17 +85,17 @@ export default function CustomerProfile() {
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-card rounded-xl border border-border p-4 text-center">
+          <div className="bg-card rounded-xl border border-border p-4 text-center card-hover">
             <Users className="w-5 h-5 text-accent mx-auto mb-1.5" />
             <p className="text-lg font-bold text-foreground">{stats.completed}</p>
             <p className="text-[10px] text-muted-foreground">Journeys</p>
           </div>
-          <div className="bg-card rounded-xl border border-border p-4 text-center">
+          <div className="bg-card rounded-xl border border-border p-4 text-center card-hover">
             <Clock className="w-5 h-5 text-green mx-auto mb-1.5" />
             <p className="text-lg font-bold text-foreground">{stats.totalHours}h</p>
             <p className="text-[10px] text-muted-foreground">Accompanied</p>
           </div>
-          <div className="bg-card rounded-xl border border-border p-4 text-center">
+          <div className="bg-card rounded-xl border border-border p-4 text-center card-hover">
             <Star className="w-5 h-5 text-amber mx-auto mb-1.5" />
             <p className="text-lg font-bold text-foreground">{stats.uniquePartners}</p>
             <p className="text-[10px] text-muted-foreground">Partners</p>
@@ -80,7 +103,7 @@ export default function CustomerProfile() {
         </div>
 
         {favoritePartners.length > 0 && (
-          <div className="bg-card rounded-2xl border border-border p-5 mb-6">
+          <div className="bg-card rounded-2xl border border-border p-5 mb-6 card-hover">
             <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
               <Heart className="w-4 h-4 text-destructive" /> Favorite Partners
             </h3>
@@ -101,7 +124,7 @@ export default function CustomerProfile() {
         <div className="space-y-1">
           <button
             onClick={() => { toggleLargeText(); toast('Text size toggled') }}
-            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border border-border mb-2"
+            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border border-border mb-2 btn-press"
           >
             <Accessibility className="w-5 h-5 text-muted-foreground" />
             <div className="flex-1">
@@ -115,7 +138,7 @@ export default function CustomerProfile() {
 
           <button
             onClick={() => setShowLang(!showLang)}
-            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border border-border mb-2"
+            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border border-border mb-2 btn-press"
           >
             <Globe className="w-5 h-5 text-muted-foreground" />
             <div className="flex-1">
@@ -126,12 +149,12 @@ export default function CustomerProfile() {
           </button>
 
           {showLang && (
-            <div className="bg-card rounded-2xl border border-border p-3 mb-2 grid grid-cols-2 gap-2">
+            <div className="bg-card rounded-2xl border border-border p-3 mb-2 grid grid-cols-2 gap-2 animate-scale-in">
               {(Object.entries(langNames) as [LangCode, string][]).map(([code, name]) => (
                 <button
                   key={code}
                   onClick={() => { setLocale(code); setShowLang(false) }}
-                  className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                  className={`px-3 py-2 rounded-xl text-sm font-medium transition-all btn-press ${
                     locale === code ? 'bg-accent text-white' : 'bg-muted text-muted-foreground hover:bg-muted/80'
                   }`}
                 >
@@ -141,54 +164,24 @@ export default function CustomerProfile() {
             </div>
           )}
 
-          <button
-            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border border-border mb-2"
-          >
-            <Heart className="w-5 h-5 text-muted-foreground" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">Preferences</p>
-              <p className="text-xs text-muted-foreground">Support partner, language</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground/30" />
-          </button>
-
-          <button
-            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border border-border mb-2"
-          >
-            <Shield className="w-5 h-5 text-muted-foreground" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">Trusted Contacts</p>
-              <p className="text-xs text-muted-foreground">Emergency contacts</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground/30" />
-          </button>
-
-          <button
-            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border border-border mb-2"
-          >
-            <CreditCard className="w-5 h-5 text-muted-foreground" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">Payment Methods</p>
-              <p className="text-xs text-muted-foreground">Saved cards, UPI</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground/30" />
-          </button>
-
-          <button
-            onClick={() => router.push('/terms')}
-            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border border-border mb-2"
-          >
-            <HelpCircle className="w-5 h-5 text-muted-foreground" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">Terms & Privacy</p>
-              <p className="text-xs text-muted-foreground">Legal, policies</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground/30" />
-          </button>
+          {menuItems.map((item) => (
+            <button
+              key={item.label}
+              onClick={() => item.href && router.push(item.href)}
+              className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border border-border mb-2 btn-press"
+            >
+              <item.icon className="w-5 h-5 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">{item.label}</p>
+                <p className="text-xs text-muted-foreground">{item.desc}</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground/30" />
+            </button>
+          ))}
 
           <button
             onClick={() => { doLogout(); router.push('/login') }}
-            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-destructive/5 transition-colors border border-border text-destructive"
+            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-destructive/5 transition-colors border border-border text-destructive btn-press"
           >
             <LogOut className="w-5 h-5" />
             <div className="flex-1">
@@ -202,5 +195,3 @@ export default function CustomerProfile() {
     </div>
   )
 }
-
-

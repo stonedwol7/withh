@@ -1,12 +1,14 @@
 import Link from "next/link";
+import { BrandWordmark } from "@/components/brand/brand-wordmark";
 
 export default function Home() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-4">WITHH</h1>
-        <p className="text-muted-foreground mb-6">Redirecting...</p>
-        <Link href="/login" className="text-accent hover:underline">Go to Login</Link>
+        <p className="text-sm text-muted-foreground mb-3">"When you can't go alone, we'll go with you."</p>
+        <BrandWordmark size="lg" />
+        <p className="text-muted-foreground mt-6 mb-6 text-sm">Redirecting...</p>
+        <Link href="/login" className="text-accent hover:underline text-sm">Go to Login</Link>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { ArrowLeft, UserCircle, Briefcase, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { BrandSignature } from '@/components/brand/brand-signature'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -51,39 +52,47 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="bg-card border-b border-border px-4 h-14 flex items-center">
-        <button onClick={() => router.back()} className="p-1 -ml-1 rounded-lg hover:bg-muted transition-colors" aria-label="Go back">
+      <header className="bg-card/80 backdrop-blur-lg border-b border-border px-4 h-14 flex items-center sticky top-0 z-40">
+        <button onClick={() => router.back()} className="p-1.5 -ml-1.5 rounded-xl hover:bg-muted transition-colors btn-press" aria-label="Go back">
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
-        <span className="text-xl font-bold text-foreground ml-3">WITHH</span>
+        <BrandSignature size="sm" showMark={false} />
       </header>
 
       <div className="flex-1 max-w-md mx-auto w-full px-5 pt-8 pb-6">
-        <h1 className="text-2xl font-bold text-foreground mb-2">Create Account</h1>
-        <p className="text-sm text-muted-foreground mb-8">Join WITHH as a customer or support partner.</p>
+        <h1 className="text-2xl font-bold text-foreground mb-2 animate-fade-in">Create Account</h1>
+        <p className="text-sm text-muted-foreground mb-8 animate-fade-in">Join WITHH as a customer or support partner.</p>
 
-        <div className="flex gap-3 mb-8">
+        <div className="flex gap-3 mb-8 animate-fade-in-up">
           <button
             onClick={() => setRole('customer')}
-            className={`flex-1 p-4 rounded-2xl border text-center transition-all btn-press ${
-              role === 'customer' ? 'border-accent bg-accent/5' : 'border-border bg-card'
+            className={`flex-1 p-4 rounded-2xl border text-center transition-all btn-press card-hover ${
+              role === 'customer' ? 'border-accent bg-accent/5 ring-1 ring-accent/20' : 'border-border bg-card'
             }`}
           >
-            <UserCircle className={`w-6 h-6 mx-auto mb-2 ${role === 'customer' ? 'text-accent' : 'text-muted-foreground'}`} />
+            <div className={`w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center ${
+              role === 'customer' ? 'bg-accent/10' : 'bg-muted'
+            }`}>
+              <UserCircle className={`w-5 h-5 ${role === 'customer' ? 'text-accent' : 'text-muted-foreground'}`} />
+            </div>
             <p className={`text-sm font-medium ${role === 'customer' ? 'text-accent' : 'text-foreground'}`}>Customer</p>
           </button>
           <button
             onClick={() => setRole('partner')}
-            className={`flex-1 p-4 rounded-2xl border text-center transition-all btn-press ${
-              role === 'partner' ? 'border-green bg-green/5' : 'border-border bg-card'
+            className={`flex-1 p-4 rounded-2xl border text-center transition-all btn-press card-hover ${
+              role === 'partner' ? 'border-green bg-green/5 ring-1 ring-green/20' : 'border-border bg-card'
             }`}
           >
-            <Briefcase className={`w-6 h-6 mx-auto mb-2 ${role === 'partner' ? 'text-green' : 'text-muted-foreground'}`} />
+            <div className={`w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center ${
+              role === 'partner' ? 'bg-green/10' : 'bg-muted'
+            }`}>
+              <Briefcase className={`w-5 h-5 ${role === 'partner' ? 'text-green' : 'text-muted-foreground'}`} />
+            </div>
             <p className={`text-sm font-medium ${role === 'partner' ? 'text-green' : 'text-foreground'}`}>Partner</p>
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
           <div>
             <label className="text-sm font-medium text-foreground mb-1.5 block" htmlFor="regName">Full Name *</label>
             <input
@@ -91,7 +100,7 @@ export default function RegisterPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your full name"
-              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-colors"
+              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all"
             />
           </div>
           <div>
@@ -102,7 +111,7 @@ export default function RegisterPage() {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+91 98765 43210"
               type="tel"
-              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-colors"
+              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all"
             />
           </div>
           <div>
@@ -113,7 +122,7 @@ export default function RegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               type="email"
-              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-colors"
+              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all"
             />
           </div>
 
@@ -133,12 +142,12 @@ export default function RegisterPage() {
           </button>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
+        <p className="text-center text-sm text-muted-foreground mt-6 animate-fade-in" style={{ animationDelay: '300ms' }}>
           Already have an account?{' '}
           <Link href="/login" className="text-accent font-medium hover:underline">Sign in</Link>
         </p>
 
-        <div className="text-center mt-6">
+        <div className="text-center mt-6 animate-fade-in" style={{ animationDelay: '400ms' }}>
           <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground/60">
             <Sparkles className="w-3 h-3" />
             <span>Demo mode &middot; No real data stored</span>

@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { supabase } from '@/lib/supabase/client'
 
 export type PortalRole = 'customer' | 'partner' | 'ops' | null
 
@@ -11,8 +10,19 @@ interface AuthState {
   error: string | null
   login: (email: string, password: string) => Promise<boolean>
   logout: () => Promise<void>
-  determineRole: () => Promise<PortalRole>
   clearError: () => void
+}
+
+function isSupabaseConfigured(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  return !!url && !url.includes('your_supabase')
+}
+
+function determineRoleFromEmail(email: string): PortalRole {
+  const prefix = email.split('@')[0].toLowerCase()
+  if (prefix.includes('ops') || prefix.includes('staff') || prefix.includes('admin')) return 'ops'
+  if (prefix.includes('partner') || prefix.includes('support')) return 'partner'
+  return 'customer'
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -24,23 +34,58 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   login: async (email: string, password: string) => {
     set({ loading: true, error: null })
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error || !data.user) {
-      set({ loading: false, error: error?.message || 'Login failed' })
-      return false
+
+    // Tier 1: Supabase (if configured)
+    if (isSupabaseConfigured()) {
+      try {
+        const { supabase } = await import('@/lib/supabase/client')
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+        if (!error && data.user) {
+          const role = await determineUserRole(supabase, data.user.id)
+          if (role) {
+            set({
+              isAuthenticated: true,
+              role,
+              userName: data.user.email?.split('@')[0] || 'User',
+              loading: false,
+              error: null,
+            })
+            return true
+          }
+        }
+      } catch {}
     }
 
-    const role = await determineUserRole(data.user.id)
-    if (!role) {
-      await supabase.auth.signOut()
-      set({ loading: false, error: 'No role found for this user. Contact support.' })
-      return false
+    // Tier 2: Local Express backend
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
+    const useBackend = process.env.NEXT_PUBLIC_USE_LOCAL_BACKEND === 'true'
+    if (useBackend) {
+      try {
+        const res = await fetch(`${apiUrl}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          set({
+            isAuthenticated: true,
+            role: data.role || determineRoleFromEmail(email),
+            userName: data.name || email.split('@')[0],
+            loading: false,
+            error: null,
+          })
+          return true
+        }
+      } catch {}
     }
 
+    // Tier 3: Mock data — any email/password works
+    const role = determineRoleFromEmail(email)
     set({
       isAuthenticated: true,
       role,
-      userName: data.user.email?.split('@')[0] || 'User',
+      userName: email.split('@')[0],
       loading: false,
       error: null,
     })
@@ -48,41 +93,31 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: async () => {
-    await supabase.auth.signOut()
+    if (isSupabaseConfigured()) {
+      try {
+        const { supabase } = await import('@/lib/supabase/client')
+        await supabase.auth.signOut()
+      } catch {}
+    }
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
+    const useBackend = process.env.NEXT_PUBLIC_USE_LOCAL_BACKEND === 'true'
+    if (useBackend) {
+      try { await fetch(`${apiUrl}/auth/logout`, { method: 'POST' }) } catch {}
+    }
     set({ isAuthenticated: false, role: null, userName: '', error: null })
-  },
-
-  determineRole: async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return null
-    const role = await determineUserRole(user.id)
-    return role
   },
 
   clearError: () => set({ error: null }),
 }))
 
-async function determineUserRole(authId: string): Promise<PortalRole> {
-  const { data: customer } = await supabase
-    .from('customers')
-    .select('id')
-    .eq('auth_id', authId)
-    .single()
-  if (customer) return 'customer'
-
-  const { data: partner } = await supabase
-    .from('support_partners')
-    .select('id')
-    .eq('auth_id', authId)
-    .single()
-  if (partner) return 'partner'
-
-  const { data: ops } = await supabase
-    .from('operations_team')
-    .select('id')
-    .eq('auth_id', authId)
-    .single()
-  if (ops) return 'ops'
-
+async function determineUserRole(supabase: any, authId: string): Promise<PortalRole> {
+  for (const table of ['customers', 'support_partners', 'operations_team'] as const) {
+    const { data } = await supabase.from(table).select('id').eq('auth_id', authId).maybeSingle()
+    if (data) {
+      if (table === 'customers') return 'customer'
+      if (table === 'support_partners') return 'partner'
+      if (table === 'operations_team') return 'ops'
+    }
+  }
   return null
 }

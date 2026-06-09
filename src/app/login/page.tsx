@@ -40,7 +40,7 @@ const trustSignals = [
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login, logout, isAuthenticated, role, loading, error, clearError } = useAuthStore()
+  const { login, isAuthenticated, role, loading, error, clearError } = useAuthStore()
   const initialize = useAppStore((s) => s.initialize)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -141,7 +141,7 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-3">
-              {portals.map((portal, idx) => (
+              {portals.map((portal) => (
                 <button
                   key={portal.id}
                   onClick={() => handleLogin()}

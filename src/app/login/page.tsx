@@ -3,10 +3,11 @@
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth-store'
 import { useAppStore } from '@/store/use-store'
-import { UserCircle, Briefcase, Sparkles, ArrowRight, Building2 } from 'lucide-react'
+import { UserCircle, Briefcase, Sparkles, ArrowRight, Building2, Shield, Heart, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BrandMark } from '@/components/brand/brand-mark'
+import { BrandWordmark } from '@/components/brand/brand-wordmark'
 
 const portals = [
   {
@@ -39,6 +40,12 @@ const portals = [
     bg: 'bg-purple/5',
     ring: 'ring-purple/20',
   },
+]
+
+const trustSignals = [
+  { icon: Shield, text: 'Verified partners' },
+  { icon: Heart, text: 'Human-reviewed matching' },
+  { icon: Users, text: '24/7 support team' },
 ]
 
 export default function LoginPage() {
@@ -78,30 +85,23 @@ export default function LoginPage() {
         className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{ backgroundImage: "url('/brand-pattern.png')", backgroundSize: '400px' }}
       />
+
       <div className="flex-1 flex items-center justify-center p-5 relative z-10">
         <div className="w-full max-w-md">
           <div className="text-center mb-10 animate-fade-in">
-            <div className="flex justify-center mb-8">
-              <Image
-                src="/logo-stacked.png"
-                alt="WITHH"
-                width={48}
-                height={48}
-                className="opacity-30"
-                priority
-              />
+            <div className="mb-8">
+              <BrandMark size={28} className="text-accent mx-auto mb-5 opacity-60" />
+              <p className="text-xl md:text-2xl text-foreground font-normal leading-relaxed max-w-sm mx-auto">
+                &ldquo;When you can&apos;t go alone,<br />
+                <span className="text-accent font-semibold">we&apos;ll go with you.</span>&rdquo;
+              </p>
             </div>
 
-            <p className="text-xl md:text-2xl text-foreground font-medium leading-relaxed max-w-sm mx-auto">
-              &ldquo;When you can&apos;t go alone, we&apos;ll go with you.&rdquo;
-            </p>
-
-            <div className="mt-6 flex items-center justify-center gap-3">
-              <span className="h-px w-8 bg-border" />
-              <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-none">WITHH</h1>
-              <span className="h-px w-8 bg-border" />
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <div className="h-px flex-1 max-w-16 bg-border" />
+              <BrandWordmark size="md" />
+              <div className="h-px flex-1 max-w-16 bg-border" />
             </div>
-            <p className="text-xs text-muted-foreground/50 mt-2 tracking-widest uppercase">Human Accompaniment</p>
           </div>
 
           <div className="space-y-3.5">
@@ -158,14 +158,23 @@ export default function LoginPage() {
             ))}
           </div>
 
-          <div className="text-center mt-6 animate-fade-in" style={{ animationDelay: '700ms' }}>
+          <div className="flex items-center justify-center gap-6 mt-8 animate-fade-in" style={{ animationDelay: '700ms' }}>
+            {trustSignals.map((item) => (
+              <div key={item.text} className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
+                <item.icon className="w-3 h-3" />
+                <span>{item.text}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-6 animate-fade-in" style={{ animationDelay: '800ms' }}>
             <p className="text-sm text-muted-foreground">
               New here?{' '}
               <Link href="/register" className="text-accent font-medium hover:underline">Create account</Link>
             </p>
           </div>
 
-          <div className="text-center mt-4 animate-fade-in" style={{ animationDelay: '800ms' }}>
+          <div className="text-center mt-4 animate-fade-in" style={{ animationDelay: '900ms' }}>
             <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground/60">
               <Sparkles className="w-3 h-3" />
               <span>Demo mode &middot; No login required</span>

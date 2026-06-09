@@ -1,5 +1,5 @@
 -- WITHH Database Schema
--- Run in Supabase SQL Editor
+-- Run in Supabase SQL Editor or via: psql "$SUPABASE_DB_URL" -f supabase/schema.sql
 
 -- 1. CUSTOMERS
 CREATE TABLE IF NOT EXISTS customers (
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS journey_messages (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 7. OPERATIONS TEAM (hidden access)
+-- 7. OPERATIONS TEAM
 CREATE TABLE IF NOT EXISTS operations_team (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   auth_id UUID UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -112,53 +112,38 @@ ALTER TABLE journey_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE journey_messages ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
--- Customers: can only read/update their own data
-CREATE POLICY "customers_own" ON customers
-  FOR ALL USING (auth_id = auth.uid());
+CREATE POLICY "customers_own" ON customers FOR ALL USING (auth_id = auth.uid());
+CREATE POLICY "partners_own" ON support_partners FOR ALL USING (auth_id = auth.uid());
 
--- Partners: can only read/update their own data
-CREATE POLICY "partners_own" ON support_partners
-  FOR ALL USING (auth_id = auth.uid());
+CREATE POLICY "requests_select" ON requests FOR SELECT USING (
+  customer_id IN (SELECT id FROM customers WHERE auth_id = auth.uid())
+  OR id IN (SELECT request_id FROM assignments WHERE partner_id IN (SELECT id FROM support_partners WHERE auth_id = auth.uid()))
+  OR auth.uid() IN (SELECT auth_id FROM operations_team)
+);
 
--- Requests: customers see own, partners see assigned, ops see all
-CREATE POLICY "requests_select" ON requests
-  FOR SELECT USING (
-    customer_id IN (SELECT id FROM customers WHERE auth_id = auth.uid())
-    OR id IN (SELECT request_id FROM assignments WHERE partner_id IN (SELECT id FROM support_partners WHERE auth_id = auth.uid()))
-    OR auth_id() IN (SELECT auth_id FROM operations_team)
-  );
+CREATE POLICY "requests_insert" ON requests FOR INSERT WITH CHECK (
+  customer_id IN (SELECT id FROM customers WHERE auth_id = auth.uid())
+);
 
-CREATE POLICY "requests_insert" ON requests
-  FOR INSERT WITH CHECK (
-    customer_id IN (SELECT id FROM customers WHERE auth_id = auth.uid())
-  );
+CREATE POLICY "assignments_select" ON assignments FOR SELECT USING (
+  request_id IN (SELECT id FROM requests WHERE customer_id IN (SELECT id FROM customers WHERE auth_id = auth.uid()))
+  OR partner_id IN (SELECT id FROM support_partners WHERE auth_id = auth.uid())
+  OR auth.uid() IN (SELECT auth_id FROM operations_team)
+);
 
--- Assignments: relevant parties see
-CREATE POLICY "assignments_select" ON assignments
-  FOR SELECT USING (
-    request_id IN (SELECT id FROM requests WHERE customer_id IN (SELECT id FROM customers WHERE auth_id = auth.uid()))
-    OR partner_id IN (SELECT id FROM support_partners WHERE auth_id = auth.uid())
-    OR auth_id() IN (SELECT auth_id FROM operations_team)
-  );
+CREATE POLICY "journey_events_select" ON journey_events FOR SELECT USING (
+  request_id IN (SELECT id FROM requests WHERE customer_id IN (SELECT id FROM customers WHERE auth_id = auth.uid()))
+  OR request_id IN (SELECT request_id FROM assignments WHERE partner_id IN (SELECT id FROM support_partners WHERE auth_id = auth.uid()))
+  OR auth.uid() IN (SELECT auth_id FROM operations_team)
+);
 
--- Journey events: relevant parties see
-CREATE POLICY "journey_events_select" ON journey_events
-  FOR SELECT USING (
-    request_id IN (SELECT id FROM requests WHERE customer_id IN (SELECT id FROM customers WHERE auth_id = auth.uid()))
-    OR request_id IN (SELECT request_id FROM assignments WHERE partner_id IN (SELECT id FROM support_partners WHERE auth_id = auth.uid()))
-    OR auth_id() IN (SELECT auth_id FROM operations_team)
-  );
+CREATE POLICY "journey_messages_select" ON journey_messages FOR SELECT USING (
+  request_id IN (SELECT id FROM requests WHERE customer_id IN (SELECT id FROM customers WHERE auth_id = auth.uid()))
+  OR request_id IN (SELECT request_id FROM assignments WHERE partner_id IN (SELECT id FROM support_partners WHERE auth_id = auth.uid()))
+  OR auth.uid() IN (SELECT auth_id FROM operations_team)
+);
 
--- Journey messages: relevant parties see
-CREATE POLICY "journey_messages_select" ON journey_messages
-  FOR SELECT USING (
-    request_id IN (SELECT id FROM requests WHERE customer_id IN (SELECT id FROM customers WHERE auth_id = auth.uid()))
-    OR request_id IN (SELECT request_id FROM assignments WHERE partner_id IN (SELECT id FROM support_partners WHERE auth_id = auth.uid()))
-    OR auth_id() IN (SELECT auth_id FROM operations_team)
-  );
-
-CREATE POLICY "journey_messages_insert" ON journey_messages
-  FOR INSERT WITH CHECK (
-    request_id IN (SELECT id FROM requests WHERE customer_id IN (SELECT id FROM customers WHERE auth_id = auth.uid()))
-    OR request_id IN (SELECT request_id FROM assignments WHERE partner_id IN (SELECT id FROM support_partners WHERE auth_id = auth.uid()))
-  );
+CREATE POLICY "journey_messages_insert" ON journey_messages FOR INSERT WITH CHECK (
+  request_id IN (SELECT id FROM requests WHERE customer_id IN (SELECT id FROM customers WHERE auth_id = auth.uid()))
+  OR request_id IN (SELECT request_id FROM assignments WHERE partner_id IN (SELECT id FROM support_partners WHERE auth_id = auth.uid()))
+);

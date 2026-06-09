@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { CustomerHeader } from '@/components/shared/customer-nav'
 import { CATEGORY_ICONS, CATEGORY_LABELS } from '@/lib/constants'
 import { Shield, UserCheck, Heart, Users, ArrowRight, Sparkles } from 'lucide-react'
+import Image from 'next/image'
 import type { SupportCategory } from '@/lib/types'
 
 const categories: SupportCategory[] = ['hospital', 'government', 'interview', 'elderly', 'event', 'other']
@@ -29,24 +30,40 @@ export default function CustomerHome() {
     <div>
       <CustomerHeader showBack={false} />
 
-      <div className="px-5 pt-8 pb-4 animate-fade-in">
-        <p className="text-xl md:text-2xl text-foreground font-medium leading-relaxed max-w-sm">
-          &ldquo;When you can&apos;t go alone, we&apos;ll go with you.&rdquo;
-        </p>
-        <h1 className="text-[40px] font-bold text-foreground leading-tight tracking-tight mt-4">WITHH</h1>
+      <div className="relative overflow-hidden bg-gradient-to-b from-accent/[0.07] to-transparent">
+        <div className="px-5 pt-8 pb-10 animate-fade-in">
+          <div className="flex justify-center mb-8">
+            <Image
+              src="/hero-illustration.png"
+              alt=""
+              width={280}
+              height={200}
+              className="w-[280px] h-auto"
+              priority
+            />
+          </div>
+
+          <div className="text-center">
+            <h1 className="text-[44px] font-bold text-foreground leading-none tracking-tight">WITHH</h1>
+            <p className="text-2xl text-accent font-semibold mt-3">Never Alone.</p>
+            <p className="text-base text-muted-foreground mt-3 max-w-xs mx-auto leading-relaxed">
+              Trusted human support for life&rsquo;s important moments.
+            </p>
+          </div>
+
+          <div className="mt-8">
+            <button
+              onClick={() => router.push('/customer/request')}
+              className="withh-gradient text-white w-full py-4 px-6 rounded-2xl text-lg font-semibold hover:opacity-90 transition-all btn-press shadow-lg shadow-black/10 flex items-center justify-center gap-2"
+            >
+              <Sparkles className="w-5 h-5" />
+              Request Support
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="px-5 pb-8 animate-fade-in-up stagger-1">
-        <button
-          onClick={() => router.push('/customer/request')}
-          className="withh-gradient text-white w-full py-4 px-6 rounded-2xl text-lg font-semibold hover:opacity-90 transition-all btn-press shadow-lg shadow-black/10 flex items-center justify-center gap-2"
-        >
-          <Sparkles className="w-5 h-5" />
-          Request Support
-        </button>
-      </div>
-
-      <div className="px-5 pb-8 animate-fade-in-up stagger-2">
+      <div className="px-5 py-8 animate-fade-in-up stagger-2">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">Support Categories</h2>
         <div className="grid grid-cols-2 gap-3">
           {categories.map((cat) => (

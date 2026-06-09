@@ -4,7 +4,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useAuthStore } from '@/store/auth-store'
 import { Home, ClipboardList, MessageSquare, User, Route, ArrowLeft } from 'lucide-react'
 import { NotificationCenter } from '@/components/shared/notification-center'
-import Image from 'next/image'
+import { BrandSignature } from '@/components/brand/brand-signature'
 
 const navItems = [
   { href: '/customer', icon: Home, label: 'Home' },
@@ -69,7 +69,7 @@ export function CustomerHeader({ title, showBack = true }: { title?: string; sho
         {title ? (
           <h1 className="text-lg font-semibold text-foreground">{title}</h1>
         ) : (
-          <Image src="/logo-horizontal.png" alt="WITHH" width={70} height={20} className="object-contain" />
+          <BrandSignature markSize={16} />
         )}
       </div>
       <div className="flex items-center gap-2">
@@ -86,7 +86,7 @@ export function CustomerHeaderWithLogout() {
 
   return (
     <header className="bg-card/80 backdrop-blur-lg border-b border-border px-4 h-14 flex items-center justify-between sticky top-0 z-40" role="banner">
-      <Image src="/logo-horizontal.png" alt="WITHH" width={70} height={20} className="object-contain" />
+      <BrandSignature markSize={16} />
       <div className="flex items-center gap-3">
         <span className="text-xs text-muted-foreground">{userName}</span>
         <button

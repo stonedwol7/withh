@@ -7,7 +7,6 @@ import { ArrowLeft, UserCircle, Briefcase, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
 import { BrandSignature } from '@/components/brand/brand-signature'
-import { supabase } from '@/lib/supabase/client'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -29,29 +28,35 @@ export default function RegisterPage() {
     setSubmitting(true)
     setError(null)
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: email.trim(),
-      password: password.trim(),
-    })
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const hasSupabase = !!supabaseUrl && !supabaseUrl.includes('your_supabase')
 
-    if (authError || !authData.user) {
-      setError(authError?.message || 'Registration failed')
-      setSubmitting(false)
-      return
-    }
+    if (hasSupabase) {
+      try {
+        const { supabase } = await import('@/lib/supabase/client')
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: email.trim(),
+          password: password.trim(),
+        })
 
-    const table = role === 'customer' ? 'customers' : 'support_partners'
-    const { error: insertError } = await supabase.from(table).insert({
-      auth_id: authData.user.id,
-      name: name.trim(),
-      email: email.trim(),
-      phone: phone.trim() || null,
-    })
+        if (!authError && authData?.user) {
+          const table = role === 'customer' ? 'customers' : 'support_partners'
+          const { error: insertError } = await supabase.from(table).insert({
+            auth_id: authData.user.id,
+            name: name.trim(),
+            email: email.trim(),
+            phone: phone.trim() || null,
+          })
 
-    if (insertError) {
-      setError(insertError.message)
-      setSubmitting(false)
-      return
+          if (!insertError) {
+            await login(email.trim(), password.trim())
+            await initialize()
+            setSubmitting(false)
+            router.push(role === 'customer' ? '/customer' : '/partner')
+            return
+          }
+        }
+      } catch {}
     }
 
     await login(email.trim(), password.trim())

@@ -7,7 +7,7 @@ import { ArrowLeft, UserCircle, Briefcase, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { BrandSignature } from '@/components/brand/brand-signature'
+import Image from 'next/image'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -56,7 +56,7 @@ export default function RegisterPage() {
         <button onClick={() => router.back()} className="p-1.5 -ml-1.5 rounded-xl hover:bg-muted transition-colors btn-press" aria-label="Go back">
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
-        <BrandSignature size="sm" showMark={false} />
+        <Image src="/logo-horizontal.png" alt="WITHH" width={70} height={20} className="object-contain" />
       </header>
 
       <div className="flex-1 max-w-md mx-auto w-full px-5 pt-8 pb-6">

@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuthStore } from '@/store/auth-store'
 import { ArrowLeft, LogOut, ClipboardList, Handshake, Activity, Users, AlertTriangle, DollarSign } from 'lucide-react'
-import { BrandSignature } from '@/components/brand/brand-signature'
+import Image from 'next/image'
 
 export function OpsHeader({ title }: { title: string }) {
   const router = useRouter()
@@ -47,9 +47,9 @@ export function OpsSidebar() {
   return (
     <aside className="w-64 bg-card border-r border-border h-screen sticky top-0 overflow-y-auto flex flex-col" role="navigation" aria-label="Operations sidebar">
       <div className="p-5 border-b border-border flex items-center gap-2">
-          <BrandSignature size="sm" showMark={false} />
-          <span className="text-xs text-amber font-medium">Ops</span>
-        </div>
+        <Image src="/logo-horizontal.png" alt="WITHH" width={60} height={17} className="object-contain" />
+        <span className="text-xs text-amber font-medium">Ops</span>
+      </div>
       <nav className="p-3 space-y-1 flex-1">
         {items.map((item) => {
           const isActive = pathname === item.href

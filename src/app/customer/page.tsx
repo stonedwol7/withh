@@ -2,10 +2,8 @@
 
 import { useRouter } from 'next/navigation'
 import { CustomerHeader } from '@/components/shared/customer-nav'
-import { useAuthStore } from '@/store/auth-store'
 import { CATEGORY_ICONS, CATEGORY_LABELS } from '@/lib/constants'
 import { Shield, UserCheck, Heart, Users, ArrowRight, Sparkles } from 'lucide-react'
-import { BrandWordmark } from '@/components/brand/brand-wordmark'
 import type { SupportCategory } from '@/lib/types'
 
 const categories: SupportCategory[] = ['hospital', 'government', 'interview', 'elderly', 'event', 'other']
@@ -26,20 +24,16 @@ const steps = [
 
 export default function CustomerHome() {
   const router = useRouter()
-  const userName = useAuthStore((s) => s.userName)
 
   return (
     <div>
       <CustomerHeader showBack={false} />
 
       <div className="px-5 pt-8 pb-4 animate-fade-in">
-        <p className="text-sm font-medium text-accent mb-2">Welcome{userName ? `, ${userName}` : ''}</p>
         <p className="text-xl md:text-2xl text-foreground font-medium leading-relaxed max-w-sm">
           &ldquo;When you can&apos;t go alone, we&apos;ll go with you.&rdquo;
         </p>
-        <div className="mt-4">
-          <BrandWordmark size="lg" />
-        </div>
+        <h1 className="text-[40px] font-bold text-foreground leading-tight tracking-tight mt-4">WITHH</h1>
       </div>
 
       <div className="px-5 pb-8 animate-fade-in-up stagger-1">

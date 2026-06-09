@@ -3,8 +3,8 @@
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuthStore } from '@/store/auth-store'
 import { Home, Calendar, Wallet, User, MessageSquare, ArrowLeft } from 'lucide-react'
+import Image from 'next/image'
 import { NotificationCenter } from '@/components/shared/notification-center'
-import { BrandSignature } from '@/components/brand/brand-signature'
 
 export function PartnerHeader({ title, showBack = true }: { title?: string; showBack?: boolean }) {
   const router = useRouter()
@@ -22,7 +22,7 @@ export function PartnerHeader({ title, showBack = true }: { title?: string; show
         {title ? (
           <h1 className="text-lg font-semibold text-foreground">{title}</h1>
         ) : (
-          <BrandSignature size="sm" />
+          <Image src="/logo-horizontal.png" alt="WITHH" width={70} height={20} className="object-contain" />
         )}
       </div>
       <div className="flex items-center gap-2">

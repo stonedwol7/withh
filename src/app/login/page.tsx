@@ -6,7 +6,7 @@ import { useAppStore } from '@/store/use-store'
 import { UserCircle, Briefcase, Sparkles, ArrowRight, Building2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { BrandMark } from '@/components/brand/brand-mark'
+import Image from 'next/image'
 
 const portals = [
   {
@@ -82,7 +82,14 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <div className="text-center mb-10 animate-fade-in">
             <div className="flex justify-center mb-8">
-              <BrandMark size={24} className="text-foreground/20" />
+              <Image
+                src="/logo-stacked.png"
+                alt="WITHH"
+                width={48}
+                height={48}
+                className="opacity-30"
+                priority
+              />
             </div>
 
             <p className="text-xl md:text-2xl text-foreground font-medium leading-relaxed max-w-sm mx-auto">

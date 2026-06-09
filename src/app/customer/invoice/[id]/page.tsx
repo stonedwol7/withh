@@ -45,7 +45,7 @@ export default function InvoicePage() {
     win.document.close()
   }
 
-  const isSensitive = ['hospital', 'interview', 'elderly'].includes(request.category)
+  const isSensitive = ['hospital', 'appointment', 'elderly'].includes(request.category)
   const amount = isSensitive ? PRICING.sensitive : PRICING.standard
 
   return (

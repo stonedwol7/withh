@@ -10,7 +10,7 @@ import { MessageSquare } from 'lucide-react'
 const categoryIcons: Record<string, string> = {
   hospital: '🏥',
   government: '🏛️',
-  interview: '💼',
+  appointment: '📅',
   elderly: '👴',
   event: '🎉',
   other: '📋',
@@ -61,7 +61,7 @@ export default function PartnerMessages() {
                       <p className="text-sm font-semibold text-foreground">
                         {req.category === 'hospital' ? 'Hospital Visit' :
                          req.category === 'government' ? 'Government Office' :
-                         req.category === 'interview' ? 'Interview' :
+                         req.category === 'appointment' ? 'Appointment' :
                          req.category === 'elderly' ? 'Elderly Support' :
                          req.category === 'event' ? 'Event' : 'Support'} Journey
                       </p>

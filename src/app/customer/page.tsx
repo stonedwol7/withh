@@ -7,7 +7,7 @@ import { Shield, UserCheck, Heart, Users, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 import type { SupportCategory } from '@/lib/types'
 
-const categories: SupportCategory[] = ['hospital', 'government', 'interview', 'elderly', 'event', 'other']
+const categories: SupportCategory[] = ['hospital', 'government', 'appointment', 'elderly', 'event', 'other']
 
 const trustSignals = [
   { icon: UserCheck, label: 'Verified Support Partners' },

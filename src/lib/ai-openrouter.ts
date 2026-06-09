@@ -2,8 +2,8 @@ import type { SupportRequest, SupportPartner, AiAnalysis, AiMatchRecommendation,
 
 function buildAnalysisPrompt(request: SupportRequest): string {
   return `Analyze this support request and return JSON with:
-- tags: array of tags from: hospital-visit, government, interview, elderly-support, event-social, medical, anxiety, urgent, first-time, accessibility, someone-else, female-preference, male-preference, kannada, english, hindi, tamil, telugu, urdu, malayalam
-- classification: one of: hospital, government, interview, elderly, event, other
+- tags: array of tags from: hospital-visit, government, appointment, elderly-support, event-social, medical, anxiety, urgent, first-time, accessibility, someone-else, female-preference, male-preference, kannada, english, hindi, tamil, telugu, urdu, malayalam
+- classification: one of: hospital, government, appointment, elderly, event, other
 - riskFlags: array from: HIGH_ANXIETY, ELDERLY_CUSTOMER, ACCESSIBILITY_REQUIRED, URGENT_REQUEST, FIRST_TIME_CUSTOMER, EMOTIONAL_SENSITIVITY, SOMEONE_ELSE_INVOLVED
 - reasoning: brief explanation
 

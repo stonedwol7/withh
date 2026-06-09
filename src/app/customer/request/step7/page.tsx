@@ -19,7 +19,7 @@ export default function RequestStep7() {
   const [consented, setConsented] = useState(false)
 
   const category = draft.category || 'other'
-  const isSensitive = category === 'hospital' || category === 'interview' || category === 'elderly'
+  const isSensitive = category === 'hospital' || category === 'appointment' || category === 'elderly'
   const amount = isSensitive ? PRICING.sensitive : PRICING.standard
 
   const handleSubmit = async () => {

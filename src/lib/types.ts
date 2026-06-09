@@ -1,4 +1,4 @@
-export type SupportCategory = 'hospital' | 'government' | 'interview' | 'elderly' | 'event' | 'other'
+export type SupportCategory = 'hospital' | 'government' | 'appointment' | 'elderly' | 'event' | 'other'
 
 export type SupportDuration = 'under-2' | '2-4' | 'more-4'
 
@@ -198,7 +198,7 @@ export type AiTag =
   | 'urdu'
   | 'medical'
   | 'government'
-  | 'interview'
+  | 'appointment'
   | 'event-social'
   | 'travel-support'
   | 'tomorrow'

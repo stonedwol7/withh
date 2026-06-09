@@ -72,7 +72,7 @@ export function AiInsightsPanel({ requestId }: { requestId: string }) {
             <span className="text-xs bg-blue/10 text-blue px-2 py-1 rounded-md font-medium">
               {analysis.classification === 'hospital' ? '🏥 Hospital Visit' :
                analysis.classification === 'government' ? '🏛️ Government Office' :
-               analysis.classification === 'interview' ? '💼 Interview' :
+               analysis.classification === 'appointment' ? '📅 Appointment' :
                analysis.classification === 'elderly' ? '👴 Elderly Support' :
                analysis.classification === 'event' ? '🎉 Event & Social' : '📋 Other'}
             </span>

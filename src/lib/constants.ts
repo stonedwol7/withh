@@ -3,7 +3,7 @@ import type { SupportCategory, RequestStatus, SupportDuration, GenderPreference,
 export const CATEGORY_LABELS: Record<SupportCategory, string> = {
   hospital: 'Hospital & Medical',
   government: 'Government Office',
-  interview: 'Interview Support',
+  appointment: 'Appointment Support',
   elderly: 'Elderly Support',
   event: 'Events & Social',
   other: 'Other Errands',
@@ -12,7 +12,7 @@ export const CATEGORY_LABELS: Record<SupportCategory, string> = {
 export const CATEGORY_ICONS: Record<SupportCategory, string> = {
   hospital: '🏥',
   government: '🏛️',
-  interview: '💼',
+  appointment: '📅',
   elderly: '👴',
   event: '🎉',
   other: '📋',

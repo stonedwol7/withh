@@ -10,7 +10,7 @@ import { format } from 'date-fns'
 const categoryLabels: Record<string, string> = {
   hospital: 'Hospital Visit',
   government: 'Government Office',
-  interview: 'Interview',
+  appointment: 'Appointment',
   elderly: 'Elderly Support',
   event: 'Event',
   other: 'Other',

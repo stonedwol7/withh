@@ -17,7 +17,7 @@ const steps: TourStep[] = [
   },
   {
     title: 'Request Support',
-    description: 'Tell us what you need — a hospital visit, government office, interview, or any errand. Just 7 simple steps.',
+    description: 'Tell us what you need — a hospital visit, government office, appointment, or any errand. Just 7 simple steps.',
   },
   {
     title: 'Get Matched',

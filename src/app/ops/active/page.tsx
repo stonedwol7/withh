@@ -16,7 +16,7 @@ const statusColors: Record<string, string> = {
 const categoryLabels: Record<string, string> = {
   hospital: '🏥',
   government: '🏛️',
-  interview: '💼',
+  appointment: '📅',
   elderly: '👴',
   event: '🎉',
   other: '📋',
@@ -60,7 +60,7 @@ export default function OpsActiveSupports() {
                     <span className="text-sm font-semibold text-foreground">
                       {req.category === 'hospital' ? 'Hospital Visit' :
                        req.category === 'government' ? 'Government Office' :
-                       req.category === 'interview' ? 'Interview' :
+                       req.category === 'appointment' ? 'Appointment' :
                        req.category === 'elderly' ? 'Elderly' :
                        req.category === 'event' ? 'Event' : 'Support'}
                     </span>

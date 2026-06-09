@@ -10,7 +10,7 @@ import { CATEGORY_LABELS } from '@/lib/constants'
 const categories: { id: SupportCategory; icon: string; desc: string }[] = [
   { id: 'hospital', icon: '🏥', desc: 'Medical appointments, check-ups, procedures' },
   { id: 'government', icon: '🏛️', desc: 'BBMP, passport, ration card, etc.' },
-  { id: 'interview', icon: '💼', desc: 'Job interviews, important meetings' },
+  { id: 'appointment', icon: '📅', desc: 'Job interviews, meetings, consultations' },
   { id: 'elderly', icon: '👴', desc: 'Support for senior family members' },
   { id: 'event', icon: '🎉', desc: 'Weddings, gatherings, social events' },
   { id: 'other', icon: '📋', desc: 'Something else we can help with' },

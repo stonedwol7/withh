@@ -10,7 +10,7 @@ import { riskFlagLabels } from '@/lib/ai-engine'
 const categoryLabels: Record<string, string> = {
   hospital: '🏥 Hospital',
   government: '🏛️ Government',
-  interview: '💼 Interview',
+  appointment: '📅 Appointment',
   elderly: '👴 Elderly',
   event: '🎉 Event',
   other: '📋 Other',

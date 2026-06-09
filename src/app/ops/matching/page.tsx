@@ -35,7 +35,7 @@ export default function OpsMatching() {
                 <span className="text-sm font-semibold text-foreground">
                   {req.category === 'hospital' ? '🏥 Hospital Visit' :
                    req.category === 'government' ? '🏛️ Government Office' :
-                   req.category === 'interview' ? '💼 Interview' :
+                   req.category === 'appointment' ? '📅 Appointment' :
                    req.category === 'elderly' ? '👴 Elderly Support' :
                    req.category === 'event' ? '🎉 Event' : '📋 Other'}
                 </span>

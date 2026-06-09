@@ -77,7 +77,7 @@ export default function RequestDetail() {
     router.push('/customer/requests')
   }
 
-  const isSensitive = ['hospital', 'interview', 'elderly'].includes(request.category)
+  const isSensitive = ['hospital', 'appointment', 'elderly'].includes(request.category)
   const amount = isSensitive ? PRICING.sensitive : PRICING.standard
 
   const durationHours = request.duration === 'more-4' ? 5 : request.duration === '2-4' ? 3 : 1.5

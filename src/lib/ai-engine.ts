@@ -24,7 +24,7 @@ function mockAnalyzeRequest(request: SupportRequest): AiAnalysis {
   const catMap: Record<string, AiTag> = {
     hospital: 'hospital-visit',
     government: 'government',
-    interview: 'interview',
+    appointment: 'appointment',
     elderly: 'elderly-support',
     event: 'event-social',
   }
@@ -124,7 +124,7 @@ export const tagLabels: Record<AiTag, string> = {
   'female-preference': 'Female Preference', 'male-preference': 'Male Preference',
   kannada: 'Kannada', english: 'English', hindi: 'Hindi', tamil: 'Tamil',
   telugu: 'Telugu', urdu: 'Urdu', medical: 'Medical', government: 'Government',
-  interview: 'Interview', 'event-social': 'Event & Social', 'travel-support': 'Travel Support',
+  appointment: 'Appointment', 'event-social': 'Event & Social', 'travel-support': 'Travel Support',
   tomorrow: 'Tomorrow', urgent: 'Urgent', 'first-time': 'First-Time',
   'repeat-customer': 'Repeat Customer', accessibility: 'Accessibility',
   anxiety: 'Anxiety', 'emotional-sensitivity': 'Emotional Sensitivity', 'someone-else': 'Someone Else',

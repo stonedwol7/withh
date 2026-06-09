@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="192" y2="192" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#111827"/>
+      <stop offset="1" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="40" fill="url(#bg)"/>
+  <circle cx="96" cy="70" r="30" fill="#5B8DEF" opacity="0.15"/>
+  <circle cx="96" cy="70" r="20" fill="#5B8DEF" opacity="0.3"/>
+  <text x="96" y="112" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="700" fill="#5B8DEF" text-anchor="middle" letter-spacing="-2">W</text>
+  <circle cx="148" cy="148" r="24" fill="#22C55E" opacity="0.12"/>
+  <path d="M140 148l5 5 10-10" stroke="#22C55E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+</svg>

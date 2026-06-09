@@ -1,0 +1,24 @@
+{
+  "name": "WITHH",
+  "short_name": "WITHH",
+  "description": "When you can't go alone, we'll go with you.",
+  "start_url": "/login",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#111827",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/app-icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -95,7 +95,7 @@ export default function RequestStep7() {
       <button
         onClick={handleSubmit}
         disabled={submitting || !consented}
-        className="w-full bg-primary text-primary-foreground py-4 rounded-2xl text-lg font-semibold hover:opacity-90 transition-all disabled:opacity-40 shadow-lg shadow-black/10 btn-press flex items-center justify-center gap-2"
+        className="w-full bg-primary text-primary-foreground py-4 rounded-2xl text-lg font-semibold hover:opacity-90 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
       >
         {submitting ? (
           <>

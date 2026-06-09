@@ -189,13 +189,13 @@ export default function RequestDetail() {
               <div className="p-5 border-t border-border space-y-3">
                 <button
                   onClick={handleConfirmMatch}
-                  className="w-full bg-accent text-accent-foreground py-3.5 rounded-xl font-medium hover:opacity-90 transition-all btn-press"
+                  className="w-full bg-accent text-accent-foreground py-3.5 rounded-xl font-medium hover:opacity-90 transition-all"
                 >
                   Confirm Match & Pay · ₹{amount}
                 </button>
                 <button
                   onClick={handleRequestDifferentMatch}
-                  className="w-full bg-card text-muted-foreground py-3 rounded-xl font-medium border border-border hover:bg-muted transition-all btn-press"
+                  className="w-full bg-card text-muted-foreground py-3 rounded-xl font-medium border border-border hover:bg-muted transition-all"
                 >
                   Request Different Match
                 </button>
@@ -208,13 +208,13 @@ export default function RequestDetail() {
           <div className="flex gap-2 mb-5">
             <button
               onClick={() => router.push(`/customer/requests/${request.id}/cancel`)}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-destructive/30 text-destructive text-sm font-medium hover:bg-destructive/5 transition-colors btn-press"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-destructive/30 text-destructive text-sm font-medium hover:bg-destructive/5 transition-colors"
             >
               <XCircle className="w-4 h-4" /> Cancel
             </button>
             <button
               onClick={() => router.push(`/customer/requests/${request.id}/reschedule`)}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-accent/30 text-accent text-sm font-medium hover:bg-accent/5 transition-colors btn-press"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-accent/30 text-accent text-sm font-medium hover:bg-accent/5 transition-colors"
             >
               <Calendar className="w-4 h-4" /> Reschedule
             </button>
@@ -225,13 +225,13 @@ export default function RequestDetail() {
           <div className="flex gap-2 mb-5">
             <button
               onClick={() => router.push(`/customer/completion/${request.id}`)}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-accent/10 text-accent text-sm font-medium hover:bg-accent/20 transition-colors btn-press"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-accent/10 text-accent text-sm font-medium hover:bg-accent/20 transition-colors"
             >
               <Star className="w-4 h-4" /> Rate Experience
             </button>
             <button
               onClick={handleQuickRebook}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-colors btn-press"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-colors"
             >
               <RotateCcw className="w-4 h-4" /> Book Again
             </button>
@@ -282,10 +282,10 @@ export default function RequestDetail() {
 
         <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-5 py-3 ios-safe-bottom z-40">
           <div className="max-w-lg mx-auto flex gap-3">
-            <button className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-all btn-press">
+            <button className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-all">
               <Phone className="w-4 h-4" /> Call WITHH
             </button>
-            <button className="flex-1 flex items-center justify-center gap-2 bg-whatsapp text-white py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-all btn-press">
+            <button className="flex-1 flex items-center justify-center gap-2 bg-whatsapp text-white py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-all">
               <MessageCircle className="w-4 h-4" /> WhatsApp
             </button>
           </div>

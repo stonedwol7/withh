@@ -124,7 +124,7 @@ export default function CustomerProfile() {
         <div className="space-y-1">
           <button
             onClick={() => { toggleLargeText(); toast('Text size toggled') }}
-            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border border-border mb-2 btn-press"
+            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border border-border mb-2"
           >
             <Accessibility className="w-5 h-5 text-muted-foreground" />
             <div className="flex-1">
@@ -138,7 +138,7 @@ export default function CustomerProfile() {
 
           <button
             onClick={() => setShowLang(!showLang)}
-            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border border-border mb-2 btn-press"
+            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border border-border mb-2"
           >
             <Globe className="w-5 h-5 text-muted-foreground" />
             <div className="flex-1">
@@ -154,7 +154,7 @@ export default function CustomerProfile() {
                 <button
                   key={code}
                   onClick={() => { setLocale(code); setShowLang(false) }}
-                  className={`px-3 py-2 rounded-xl text-sm font-medium transition-all btn-press ${
+                  className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
                     locale === code ? 'bg-accent text-white' : 'bg-muted text-muted-foreground hover:bg-muted/80'
                   }`}
                 >
@@ -168,7 +168,7 @@ export default function CustomerProfile() {
             <button
               key={item.label}
               onClick={() => item.href && router.push(item.href)}
-              className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border border-border mb-2 btn-press"
+              className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border border-border mb-2"
             >
               <item.icon className="w-5 h-5 text-muted-foreground" />
               <div className="flex-1">
@@ -181,7 +181,7 @@ export default function CustomerProfile() {
 
           <button
             onClick={() => { doLogout(); router.push('/login') }}
-            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-destructive/5 transition-colors border border-border text-destructive btn-press"
+            className="w-full bg-card rounded-xl px-4 py-4 flex items-center gap-3 text-left hover:bg-destructive/5 transition-colors border border-border text-destructive"
           >
             <LogOut className="w-5 h-5" />
             <div className="flex-1">

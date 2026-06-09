@@ -63,7 +63,7 @@ export default function RequestStep4() {
               <button
                 key={d.id}
                 onClick={() => setDuration(d.id)}
-                className={`w-full text-left p-4 rounded-xl border transition-all btn-press ${
+                className={`w-full text-left p-4 rounded-xl border transition-all ${
                   duration === d.id
                     ? 'border-accent bg-accent/5'
                     : 'border-border bg-card'
@@ -84,7 +84,7 @@ export default function RequestStep4() {
             router.push('/customer/request/step5')
           }}
           disabled={!canContinue}
-          className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium hover:opacity-90 transition-all disabled:opacity-40 btn-press"
+          className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium hover:opacity-90 transition-all disabled:opacity-40"
         >
           Continue
         </button>

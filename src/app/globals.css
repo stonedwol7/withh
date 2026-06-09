@@ -112,10 +112,6 @@
   }
 }
 
-@utility withh-gradient {
-  background: linear-gradient(135deg, var(--color-primary) 0%, #1e293b 100%);
-}
-
 @utility animate-status-pulse {
   animation: statusPulse 2s ease-in-out infinite;
 }
@@ -180,11 +176,11 @@
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out;
+  animation: fadeInUp 0.3s ease-out;
 }
 
 .animate-scale-in {
@@ -192,18 +188,7 @@
 }
 
 .card-hover {
-  transition: all 0.2s ease;
-}
-.card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
-}
-
-.btn-press {
-  transition: transform 0.1s ease;
-}
-.btn-press:active {
-  transform: scale(0.97);
+  transition: border-color 0.2s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -213,9 +198,3 @@
     transition-duration: 0.01ms !important;
   }
 }
-
-.stagger-1 { animation-delay: 100ms; }
-.stagger-2 { animation-delay: 200ms; }
-.stagger-3 { animation-delay: 300ms; }
-.stagger-4 { animation-delay: 400ms; }
-.stagger-5 { animation-delay: 500ms; }

@@ -60,7 +60,7 @@ export default function RequestStep5() {
             setDraft({ description, accessibilityNeeds })
             router.push('/customer/request/step6')
           }}
-          className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium hover:opacity-90 transition-all btn-press"
+          className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium hover:opacity-90 transition-all"
         >
           Continue
         </button>

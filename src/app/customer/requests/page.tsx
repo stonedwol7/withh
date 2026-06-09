@@ -55,8 +55,7 @@ export default function CustomerRequests() {
                 <button
                   key={req.id}
                   onClick={() => router.push(`/customer/requests/${req.id}`)}
-                  className="w-full bg-card rounded-2xl border border-border p-4 text-left hover:border-accent/30 transition-all card-hover animate-fade-in-up"
-                  style={{ animationDelay: `${idx * 80}ms` }}
+                  className="w-full bg-card rounded-2xl border border-border p-4 text-left hover:border-accent/30 transition-all animate-fade-in-up"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -85,7 +84,7 @@ export default function CustomerRequests() {
                 <button
                   key={req.id}
                   onClick={() => router.push(`/customer/requests/${req.id}`)}
-                  className="w-full bg-card rounded-2xl border border-border p-4 text-left hover:border-accent/30 transition-all opacity-60 hover:opacity-100 card-hover"
+                  className="w-full bg-card rounded-2xl border border-border p-4 text-left hover:border-accent/30 transition-all opacity-60 hover:opacity-100"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">

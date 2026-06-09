@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { CustomerHeader } from '@/components/shared/customer-nav'
 import { CATEGORY_ICONS, CATEGORY_LABELS } from '@/lib/constants'
-import { Shield, UserCheck, Heart, Users, ArrowRight, Sparkles } from 'lucide-react'
+import { Shield, UserCheck, Heart, Users, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 import type { SupportCategory } from '@/lib/types'
 
@@ -54,16 +54,15 @@ export default function CustomerHome() {
           <div className="mt-8">
             <button
               onClick={() => router.push('/customer/request')}
-              className="withh-gradient text-white w-full py-4 px-6 rounded-2xl text-lg font-semibold hover:opacity-90 transition-all btn-press shadow-lg shadow-black/10 flex items-center justify-center gap-2"
+              className="bg-primary text-primary-foreground w-full py-4 px-6 rounded-2xl text-lg font-semibold hover:opacity-90 transition-all"
             >
-              <Sparkles className="w-5 h-5" />
               Request Support
             </button>
           </div>
         </div>
       </div>
 
-      <div className="px-5 py-8 animate-fade-in-up stagger-2">
+      <div className="px-5 py-8 animate-fade-in-up">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">Support Categories</h2>
         <div className="grid grid-cols-2 gap-3">
           {categories.map((cat) => (
@@ -81,7 +80,7 @@ export default function CustomerHome() {
         </div>
       </div>
 
-      <div className="px-5 pb-8 animate-fade-in-up stagger-3">
+      <div className="px-5 pb-8 animate-fade-in-up">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">Trust & Safety</h2>
         <div className="bg-card rounded-2xl p-5 border border-border">
           <div className="grid grid-cols-2 gap-4">
@@ -95,7 +94,7 @@ export default function CustomerHome() {
         </div>
       </div>
 
-      <div className="px-5 pb-8 animate-fade-in-up stagger-4">
+      <div className="px-5 pb-8 animate-fade-in-up">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">How It Works</h2>
         <div className="space-y-3">
           {steps.map((step) => (

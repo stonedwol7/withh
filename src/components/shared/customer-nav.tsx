@@ -30,14 +30,14 @@ export function CustomerBottomNav() {
               role="tab"
               aria-selected={isActive}
               aria-label={item.label}
-              className="relative flex flex-col items-center justify-center gap-1 flex-1 h-full min-w-0 transition-colors btn-press"
+              className="relative flex flex-col items-center justify-center gap-1 flex-1 h-full min-w-0"
             >
               {isActive && (
                 <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-accent rounded-full animate-scale-in" />
               )}
               <item.icon
                 className={`w-5 h-5 transition-all duration-200 ${
-                  isActive ? 'text-accent scale-110' : 'text-muted-foreground'
+                  isActive ? 'text-accent' : 'text-muted-foreground'
                 }`}
               />
               <span
@@ -62,7 +62,7 @@ export function CustomerHeader({ title, showBack = true }: { title?: string; sho
     <header className="bg-card/80 backdrop-blur-lg border-b border-border px-4 h-14 flex items-center justify-between sticky top-0 z-40" role="banner">
       <div className="flex items-center gap-3">
         {showBack && (
-          <button onClick={() => router.back()} className="p-1.5 -ml-1.5 rounded-xl hover:bg-muted transition-colors btn-press" aria-label="Go back">
+          <button onClick={() => router.back()} className="p-1.5 -ml-1.5 rounded-xl hover:bg-muted transition-colors" aria-label="Go back">
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
         )}
@@ -91,7 +91,7 @@ export function CustomerHeaderWithLogout() {
         <span className="text-xs text-muted-foreground">{userName}</span>
         <button
           onClick={() => { doLogout(); router.push('/login') }}
-          className="text-xs text-destructive font-medium hover:underline btn-press"
+          className="text-xs text-destructive font-medium hover:underline"
         >
           Logout
         </button>

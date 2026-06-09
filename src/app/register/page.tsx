@@ -3,11 +3,11 @@
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth-store'
 import { useAppStore } from '@/store/use-store'
-import { ArrowLeft, UserCircle, Briefcase, Sparkles } from 'lucide-react'
+import { ArrowLeft, UserCircle, Briefcase, Loader2 } from 'lucide-react'
 import { useState } from 'react'
-import { toast } from 'sonner'
 import Link from 'next/link'
 import { BrandSignature } from '@/components/brand/brand-signature'
+import { supabase } from '@/lib/supabase/client'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -15,36 +15,46 @@ export default function RegisterPage() {
   const initialize = useAppStore((s) => s.initialize)
   const [role, setRole] = useState<'customer' | 'partner' | null>(null)
   const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleRegister = async () => {
-    if (!role || !name.trim() || !phone.trim() || !email.trim()) {
-      toast.error('Please fill in all required fields')
+    if (!role || !name.trim() || !email.trim() || !password.trim()) {
+      setError('Please fill in all required fields')
       return
     }
     setSubmitting(true)
-    const useBackend = process.env.NEXT_PUBLIC_USE_LOCAL_BACKEND === 'true'
-    if (useBackend) {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
-        const res = await fetch(`${apiUrl}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: name.trim(), phone: phone.trim(), email: email.trim(), role }),
-        })
-        if (res.ok) {
-          toast.success('Account created!')
-          await login(role, name.trim())
-          await initialize()
-          setSubmitting(false)
-          router.push(role === 'customer' ? '/customer' : '/partner')
-          return
-        }
-      } catch {}
+    setError(null)
+
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: email.trim(),
+      password: password.trim(),
+    })
+
+    if (authError || !authData.user) {
+      setError(authError?.message || 'Registration failed')
+      setSubmitting(false)
+      return
     }
-    await login(role, name.trim())
+
+    const table = role === 'customer' ? 'customers' : 'support_partners'
+    const { error: insertError } = await supabase.from(table).insert({
+      auth_id: authData.user.id,
+      name: name.trim(),
+      email: email.trim(),
+      phone: phone.trim() || null,
+    })
+
+    if (insertError) {
+      setError(insertError.message)
+      setSubmitting(false)
+      return
+    }
+
+    await login(email.trim(), password.trim())
     await initialize()
     setSubmitting(false)
     router.push(role === 'customer' ? '/customer' : '/partner')
@@ -53,7 +63,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="bg-card/80 backdrop-blur-lg border-b border-border px-4 h-14 flex items-center sticky top-0 z-40">
-        <button onClick={() => router.back()} className="p-1.5 -ml-1.5 rounded-xl hover:bg-muted transition-colors btn-press" aria-label="Go back">
+        <button onClick={() => router.back()} className="p-1.5 -ml-1.5 rounded-xl hover:bg-muted transition-colors" aria-label="Go back">
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
         <BrandSignature markSize={16} />
@@ -66,7 +76,7 @@ export default function RegisterPage() {
         <div className="flex gap-3 mb-8 animate-fade-in-up">
           <button
             onClick={() => setRole('customer')}
-            className={`flex-1 p-4 rounded-2xl border text-center transition-all btn-press card-hover ${
+            className={`flex-1 p-4 rounded-2xl border text-center transition-all hover:border-accent/30 ${
               role === 'customer' ? 'border-accent bg-accent/5 ring-1 ring-accent/20' : 'border-border bg-card'
             }`}
           >
@@ -79,7 +89,7 @@ export default function RegisterPage() {
           </button>
           <button
             onClick={() => setRole('partner')}
-            className={`flex-1 p-4 rounded-2xl border text-center transition-all btn-press card-hover ${
+            className={`flex-1 p-4 rounded-2xl border text-center transition-all hover:border-green/30 ${
               role === 'partner' ? 'border-green bg-green/5 ring-1 ring-green/20' : 'border-border bg-card'
             }`}
           >
@@ -104,17 +114,6 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block" htmlFor="regPhone">Phone Number *</label>
-            <input
-              id="regPhone"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+91 98765 43210"
-              type="tel"
-              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all"
-            />
-          </div>
-          <div>
             <label className="text-sm font-medium text-foreground mb-1.5 block" htmlFor="regEmail">Email *</label>
             <input
               id="regEmail"
@@ -125,15 +124,41 @@ export default function RegisterPage() {
               className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all"
             />
           </div>
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1.5 block" htmlFor="regPhone">Phone</label>
+            <input
+              id="regPhone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+91 98765 43210"
+              type="tel"
+              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1.5 block" htmlFor="regPassword">Password *</label>
+            <input
+              id="regPassword"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="At least 6 characters"
+              type="password"
+              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all"
+            />
+          </div>
+
+          {error && (
+            <p className="text-xs text-red text-center">{error}</p>
+          )}
 
           <button
             onClick={handleRegister}
-            disabled={submitting || !role}
-            className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium hover:opacity-90 transition-all disabled:opacity-40 btn-press flex items-center justify-center gap-2 mt-2"
+            disabled={submitting || !role || !name.trim() || !email.trim() || !password.trim()}
+            className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium hover:opacity-90 transition-all disabled:opacity-40 flex items-center justify-center gap-2 mt-2"
           >
             {submitting ? (
               <>
-                <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" />
                 Creating...
               </>
             ) : (
@@ -147,11 +172,8 @@ export default function RegisterPage() {
           <Link href="/login" className="text-accent font-medium hover:underline">Sign in</Link>
         </p>
 
-        <div className="text-center mt-6 animate-fade-in" style={{ animationDelay: '400ms' }}>
-          <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground/60">
-            <Sparkles className="w-3 h-3" />
-            <span>Demo mode &middot; No real data stored</span>
-          </div>
+        <div className="text-center mt-6 animate-fade-in">
+          <span className="text-xs text-muted-foreground/60">Demo mode</span>
         </div>
       </div>
     </div>

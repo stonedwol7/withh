@@ -26,7 +26,7 @@ export function OpsSidebar() {
     <>
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-3 left-3 z-50 p-2 rounded-xl bg-card border border-border shadow-sm btn-press"
+        className="lg:hidden fixed top-3 left-3 z-50 p-2 rounded-xl bg-card border border-border shadow-sm"
         aria-label="Open sidebar"
       >
         <Menu className="w-5 h-5 text-foreground" />
@@ -61,7 +61,7 @@ export function OpsSidebar() {
                 onClick={() => { router.push(item.href); setMobileOpen(false) }}
                 role="tab"
                 aria-selected={isActive}
-                className={`w-full flex items-center gap-3 px-5 py-3 text-sm transition-all duration-200 btn-press ${
+                className={`w-full flex items-center gap-3 px-5 py-3 text-sm transition-all duration-200 ${
                   isActive
                     ? 'text-accent font-semibold bg-accent/5 border-r-2 border-accent'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
@@ -77,7 +77,7 @@ export function OpsSidebar() {
         <div className="p-4 border-t border-border">
           <button
             onClick={() => { doLogout(); router.push('/login') }}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors btn-press"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors"
           >
             <LogOut className="w-4 h-4" />
             <span>Logout</span>

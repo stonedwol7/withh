@@ -46,7 +46,7 @@ export default function RequestStep6() {
                 onClick={() => setGenderPref(g.id)}
                 role="radio"
                 aria-checked={genderPref === g.id}
-                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all btn-press ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
                   genderPref === g.id
                     ? 'bg-accent text-accent-foreground border-accent'
                     : 'bg-card text-muted-foreground border-border hover:border-muted-foreground/30'
@@ -67,7 +67,7 @@ export default function RequestStep6() {
                 onClick={() => setLangPref(l.id)}
                 role="radio"
                 aria-checked={langPref === l.id}
-                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all btn-press ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
                   langPref === l.id
                     ? 'bg-accent text-accent-foreground border-accent'
                     : 'bg-card text-muted-foreground border-border hover:border-muted-foreground/30'
@@ -116,7 +116,7 @@ export default function RequestStep6() {
             })
             router.push('/customer/request/step7')
           }}
-          className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium hover:opacity-90 transition-all btn-press"
+          className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium hover:opacity-90 transition-all"
         >
           Continue
         </button>

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { supabase } from '@/lib/supabase/client'
 
 export type PortalRole = 'customer' | 'partner' | 'ops' | null
 
@@ -6,58 +7,82 @@ interface AuthState {
   isAuthenticated: boolean
   role: PortalRole
   userName: string
-  login: (role: 'customer' | 'partner' | 'ops', name: string) => Promise<void>
+  loading: boolean
+  error: string | null
+  login: (email: string, password: string) => Promise<boolean>
   logout: () => Promise<void>
+  determineRole: () => Promise<PortalRole>
+  clearError: () => void
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   role: null,
   userName: '',
-  login: async (role, userName) => {
-    const useBackend = process.env.NEXT_PUBLIC_USE_LOCAL_BACKEND === 'true'
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
+  loading: false,
+  error: null,
 
-    if (useBackend) {
-      try {
-        const res = await fetch(`${apiUrl}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ role, userName }),
-        })
-        if (res.ok) {
-          set({ isAuthenticated: true, role, userName })
-          return
-        }
-      } catch {}
+  login: async (email: string, password: string) => {
+    set({ loading: true, error: null })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error || !data.user) {
+      set({ loading: false, error: error?.message || 'Login failed' })
+      return false
     }
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const hasSupabase = !!url && url !== 'your_supabase_project_url'
-    if (hasSupabase) {
-      try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: `${role}@withh.com`, password: 'demo123456', role }),
-        })
-        if (res.ok) {
-          set({ isAuthenticated: true, role, userName })
-          return
-        }
-      } catch {}
+    const role = await determineUserRole(data.user.id)
+    if (!role) {
+      await supabase.auth.signOut()
+      set({ loading: false, error: 'No role found for this user. Contact support.' })
+      return false
     }
-    set({ isAuthenticated: true, role, userName })
+
+    set({
+      isAuthenticated: true,
+      role,
+      userName: data.user.email?.split('@')[0] || 'User',
+      loading: false,
+      error: null,
+    })
+    return true
   },
+
   logout: async () => {
-    const useBackend = process.env.NEXT_PUBLIC_USE_LOCAL_BACKEND === 'true'
-    if (useBackend) {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
-        await fetch(`${apiUrl}/auth/logout`, { method: 'POST' })
-      } catch {}
-    }
-    try { await fetch('/api/auth/logout', { method: 'POST' }) } catch {}
-    set({ isAuthenticated: false, role: null, userName: '' })
+    await supabase.auth.signOut()
+    set({ isAuthenticated: false, role: null, userName: '', error: null })
   },
+
+  determineRole: async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return null
+    const role = await determineUserRole(user.id)
+    return role
+  },
+
+  clearError: () => set({ error: null }),
 }))
+
+async function determineUserRole(authId: string): Promise<PortalRole> {
+  const { data: customer } = await supabase
+    .from('customers')
+    .select('id')
+    .eq('auth_id', authId)
+    .single()
+  if (customer) return 'customer'
+
+  const { data: partner } = await supabase
+    .from('support_partners')
+    .select('id')
+    .eq('auth_id', authId)
+    .single()
+  if (partner) return 'partner'
+
+  const { data: ops } = await supabase
+    .from('operations_team')
+    .select('id')
+    .eq('auth_id', authId)
+    .single()
+  if (ops) return 'ops'
+
+  return null
+}

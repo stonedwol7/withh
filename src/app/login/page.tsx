@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth-store'
 import { useAppStore } from '@/store/use-store'
-import { UserCircle, Briefcase, Sparkles, ArrowRight, Building2, Shield, Heart, Users } from 'lucide-react'
+import { UserCircle, Briefcase, Shield, Heart, Users, Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { BrandMark } from '@/components/brand/brand-mark'
@@ -30,16 +30,6 @@ const portals = [
     bg: 'bg-green/5',
     ring: 'ring-green/20',
   },
-  {
-    id: 'ops' as const,
-    label: 'Operations',
-    description: 'Review requests, match partners, monitor supports',
-    icon: Building2,
-    route: '/ops',
-    color: 'text-purple',
-    bg: 'bg-purple/5',
-    ring: 'ring-purple/20',
-  },
 ]
 
 const trustSignals = [
@@ -50,12 +40,11 @@ const trustSignals = [
 
 export default function LoginPage() {
   const router = useRouter()
-  const login = useAuthStore((s) => s.login)
+  const { login, logout, isAuthenticated, role, loading, error, clearError } = useAuthStore()
   const initialize = useAppStore((s) => s.initialize)
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  const role = useAuthStore((s) => s.role)
-  const [hovered, setHovered] = useState<string | null>(null)
-  const [loading, setLoading] = useState<string | null>(null)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [selectedRole, setSelectedRole] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -64,15 +53,17 @@ export default function LoginPage() {
       const p = portals.find((p) => p.id === role)
       if (p) router.push(p.route)
     }
-  }, [])
+  }, [isAuthenticated, role])
 
-  const handlePortalSelect = async (role: 'customer' | 'partner' | 'ops') => {
-    const info = portals.find((p) => p.id === role)!
-    setLoading(role)
-    await login(role, info.label)
-    await initialize()
-    setLoading(null)
-    router.push(info.route)
+  const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) return
+    clearError()
+    const ok = await login(email.trim(), password.trim())
+    if (ok) {
+      await initialize()
+      const p = portals.find((p) => p.id === useAuthStore.getState().role)
+      if (p) router.push(p.route)
+    }
   }
 
   if (!mounted) {
@@ -88,7 +79,7 @@ export default function LoginPage() {
 
       <div className="flex-1 flex items-center justify-center p-5 relative z-10">
         <div className="w-full max-w-md">
-          <div className="text-center mb-10 animate-fade-in">
+          <div className="text-center mb-8 animate-fade-in">
             <div className="mb-8">
               <BrandMark size={28} className="text-accent mx-auto mb-5 opacity-60" />
               <p className="text-xl md:text-2xl text-foreground font-normal leading-relaxed max-w-sm mx-auto">
@@ -97,68 +88,102 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="flex items-center justify-center gap-3 mb-6">
               <div className="h-px flex-1 max-w-16 bg-border" />
               <BrandWordmark size="md" />
               <div className="h-px flex-1 max-w-16 bg-border" />
             </div>
           </div>
 
-          <div className="space-y-3.5">
-            {portals.map((portal, idx) => (
+          <div className="animate-fade-in-up">
+            <div className="space-y-3 mb-6">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all"
+              />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all"
+              />
+
+              {error && (
+                <p className="text-xs text-red text-center">{error}</p>
+              )}
+
               <button
-                key={portal.id}
-                onClick={() => handlePortalSelect(portal.id)}
-                onMouseEnter={() => setHovered(portal.id)}
-                onMouseLeave={() => setHovered(null)}
-                disabled={loading !== null}
-                className="w-full group relative animate-fade-in-up"
-                style={{ animationDelay: `${idx * 150 + 200}ms` }}
+                onClick={handleLogin}
+                disabled={loading || !email.trim() || !password.trim()}
+                className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium hover:opacity-90 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
               >
-                <div
-                  className={`relative bg-card rounded-2xl border p-5 text-left w-full transition-all duration-300 ${
-                    hovered === portal.id
-                      ? '-translate-y-0.5 border-transparent shadow-xl shadow-black/5'
-                      : 'border-border shadow-sm'
-                  } ${hovered === portal.id ? portal.ring : ''}`}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3 mb-5">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Or select portal</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
+            <div className="space-y-3">
+              {portals.map((portal, idx) => (
+                <button
+                  key={portal.id}
+                  onClick={() => handleLogin()}
+                  onMouseEnter={() => setSelectedRole(portal.id)}
+                  onMouseLeave={() => setSelectedRole(null)}
+                  disabled={loading}
+                  className="w-full group relative"
                 >
-                  {hovered === portal.id && (
-                    <div className={`absolute inset-0 rounded-2xl opacity-5 ${portal.bg}`} />
-                  )}
-                  <div className="flex items-start gap-4 relative">
-                    <div
-                      className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 ${
-                        hovered === portal.id ? 'scale-110 shadow-lg' : ''
-                      } ${portal.bg}`}
-                    >
-                      <portal.icon className={`w-7 h-7 ${portal.color}`} />
-                    </div>
-                    <div className="flex-1 min-w-0 pt-0.5">
-                      <p className={`text-lg font-semibold transition-colors duration-300 ${
-                        hovered === portal.id ? portal.color : 'text-foreground'
-                      }`}>
-                        {portal.label}
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">{portal.description}</p>
-                    </div>
-                    <div className={`shrink-0 self-center transition-all duration-300 ${
-                      hovered === portal.id ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
-                    }`}>
-                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                        {loading === portal.id ? (
-                          <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                        ) : (
-                          <ArrowRight className="w-4 h-4 text-primary-foreground" />
-                        )}
+                  <div
+                    className={`relative bg-card rounded-2xl border p-5 text-left w-full transition-all duration-200 ${
+                      selectedRole === portal.id
+                        ? 'border-accent/30 shadow-md shadow-black/5'
+                        : 'border-border shadow-sm'
+                    }`}
+                  >
+                    {selectedRole === portal.id && (
+                      <div className={`absolute inset-0 rounded-2xl opacity-5 ${portal.bg}`} />
+                    )}
+                    <div className="flex items-start gap-4 relative">
+                      <div
+                        className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 ${
+                          selectedRole === portal.id ? 'scale-110 shadow-lg' : ''
+                        } ${portal.bg}`}
+                      >
+                        <portal.icon className={`w-7 h-7 ${portal.color}`} />
+                      </div>
+                      <div className="flex-1 min-w-0 pt-0.5">
+                        <p className={`text-lg font-semibold transition-colors duration-300 ${
+                          selectedRole === portal.id ? portal.color : 'text-foreground'
+                        }`}>
+                          {portal.label}
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">{portal.description}</p>
                       </div>
                     </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="flex items-center justify-center gap-6 mt-8 animate-fade-in" style={{ animationDelay: '700ms' }}>
+          <div className="flex items-center justify-center gap-6 mt-8 animate-fade-in">
             {trustSignals.map((item) => (
               <div key={item.text} className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
                 <item.icon className="w-3 h-3" />
@@ -167,18 +192,17 @@ export default function LoginPage() {
             ))}
           </div>
 
-          <div className="text-center mt-6 animate-fade-in" style={{ animationDelay: '800ms' }}>
+          <div className="text-center mt-6 animate-fade-in">
             <p className="text-sm text-muted-foreground">
               New here?{' '}
               <Link href="/register" className="text-accent font-medium hover:underline">Create account</Link>
             </p>
           </div>
 
-          <div className="text-center mt-4 animate-fade-in" style={{ animationDelay: '900ms' }}>
-            <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground/60">
-              <Sparkles className="w-3 h-3" />
-              <span>Demo mode &middot; No login required</span>
-            </div>
+          <div className="text-center mt-4">
+            <Link href="/ops" className="text-[11px] text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors">
+              Staff access
+            </Link>
           </div>
         </div>
       </div>

@@ -32,7 +32,7 @@ export default function RequestStep3() {
             router.push('/customer/request/step4')
           }}
           disabled={!meetingLocation.trim()}
-          className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium hover:opacity-90 transition-all disabled:opacity-40 btn-press"
+          className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium hover:opacity-90 transition-all disabled:opacity-40"
         >
           Continue
         </button>

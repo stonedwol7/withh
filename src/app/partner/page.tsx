@@ -74,7 +74,7 @@ export default function PartnerHome() {
           </div>
           <button
             onClick={() => setAvailable(!available)}
-            className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all btn-press ${
+            className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
               available
                 ? 'bg-green text-white shadow-sm shadow-green/20'
                 : 'bg-muted text-muted-foreground'
@@ -84,7 +84,7 @@ export default function PartnerHome() {
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 mb-6 animate-fade-in-up stagger-1">
+        <div className="grid grid-cols-3 gap-3 mb-6 animate-fade-in-up">
           <div className="bg-card rounded-xl border border-border p-4 card-hover">
             <Star className="w-5 h-5 text-amber mb-2" />
             <p className="text-xl font-bold text-foreground">{partner?.rating || '4.9'}</p>
@@ -105,7 +105,7 @@ export default function PartnerHome() {
         </div>
 
         {todayAssignments.length > 0 && (
-          <div className="mb-6 animate-fade-in-up stagger-2">
+          <div className="mb-6 animate-fade-in-up">
             <SectionHeader title="Today" />
             {todayAssignments.map((req) => (
               <div key={req.id} className="bg-card rounded-2xl border border-border p-5 mb-3 card-hover">
@@ -125,7 +125,7 @@ export default function PartnerHome() {
           </div>
         )}
 
-        <div className="animate-fade-in-up stagger-3">
+        <div className="animate-fade-in-up">
           <SectionHeader title="Upcoming Assignments" />
           {upcoming.length === 0 ? (
             <EmptyState icon={Calendar} title="No upcoming assignments" description="New assignments will appear here" />

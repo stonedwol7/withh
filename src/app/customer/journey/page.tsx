@@ -69,14 +69,13 @@ export default function JourneyPage() {
                     key={req.id}
                     onClick={() => router.push(`/customer/requests/${req.id}`)}
                     className="w-full flex gap-4 text-left group animate-fade-in-up"
-                    style={{ animationDelay: `${idx * 80}ms` }}
                   >
                     <div className="relative flex flex-col items-center">
-                      <div className={`w-9 h-9 rounded-full border-2 border-border bg-card flex items-center justify-center shrink-0 z-10 group-hover:border-accent/50 transition-colors`}>
+                      <div className="w-9 h-9 rounded-full border-2 border-border bg-card flex items-center justify-center shrink-0 z-10">
                         <span className="text-sm">{CATEGORY_ICONS[req.category]}</span>
                       </div>
                     </div>
-                    <div className="flex-1 bg-card rounded-2xl border border-border p-4 group-hover:border-accent/30 transition-all card-hover min-w-0">
+                    <div className="flex-1 bg-card rounded-2xl border border-border p-4 group-hover:border-accent/30 transition-all min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1.5">
                         <span className="text-sm font-semibold text-foreground truncate">
                           {CATEGORY_LABELS[req.category]}
@@ -114,8 +113,7 @@ export default function JourneyPage() {
                 <button
                   key={req.id}
                   onClick={() => router.push(`/customer/requests/${req.id}`)}
-                  className="w-full bg-card rounded-2xl border border-border p-4 text-left hover:border-accent/30 transition-all card-hover opacity-70 hover:opacity-100 animate-fade-in-up"
-                  style={{ animationDelay: `${idx * 60}ms` }}
+                  className="w-full bg-card rounded-2xl border border-border p-4 text-left hover:border-accent/30 transition-all opacity-70 hover:opacity-100 animate-fade-in-up"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center shrink-0">
@@ -148,7 +146,7 @@ export default function JourneyPage() {
             <p className="text-xs text-muted-foreground mt-1">No active journeys right now</p>
             <button
               onClick={() => router.push('/customer/request')}
-              className="mt-4 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 transition-opacity btn-press"
+              className="mt-4 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
             >
               Start new journey
             </button>

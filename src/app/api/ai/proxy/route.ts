@@ -1,32 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
-
-async function getOpenRouterKey(): Promise<string | null> {
-  const envKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY
-  if (envKey && envKey !== 'sk-or-v1-...') return envKey
-
-  try {
-    const homeDir = process.env.USERPROFILE || process.env.HOME
-    if (homeDir) {
-      const configPath = path.join(homeDir, '.config', 'opencode', 'opencode.jsonc')
-      if (fs.existsSync(configPath)) {
-        const raw = fs.readFileSync(configPath, 'utf-8')
-        const match = raw.match(/"apiKey"\s*:\s*"([^"]+)"/)
-        if (match) return match[1]
-      }
-    }
-  } catch {}
-
-  return null
-}
+import { createClient } from '@/lib/supabase/server'
 
 const SYSTEM_PROMPT = `You are an AI assistant for WITHH, a human accompaniment platform. Analyze support requests and return JSON.`
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const { messages, model: requestedModel, responseFormat } = await req.json()
-    const apiKey = await getOpenRouterKey()
+    const apiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY
 
     if (apiKey) {
       const model = requestedModel || process.env.NEXT_PUBLIC_OPENROUTER_MODEL || 'openrouter/mistralai/mistral-7b-instruct:free'

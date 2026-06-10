@@ -35,6 +35,8 @@ export async function GET() {
       .eq('partner_id', partner.id)
     const ids = assignments?.map((a) => a.request_id) || []
     query = query.in('id', ids)
+  } else if (!ops) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   const { data, error } = await query.order('created_at', { ascending: false })

@@ -1,15 +1,51 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
+
+const publicPaths = [
+  '/', '/login', '/register', '/contact', '/help', '/privacy', '/terms', '/_not-found',
+]
+
+function isPublic(pathname: string): boolean {
+  if (publicPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) return true
+  if (pathname.startsWith('/auth/')) return true
+  if (pathname.startsWith('/api/')) return true
+  if (pathname.startsWith('/_next/')) return true
+  if (/\.(svg|png|jpg|jpeg|gif|webp|css|js|ico)$/.test(pathname)) return true
+  return false
+}
 
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
-  const publicPaths = ['/login', '/auth', '/_not-found', '/']
-  const isPublic = publicPaths.some((p) => pathname === p || pathname.startsWith('/api/') || pathname.startsWith('/_next/'))
 
-  if (isPublic) {
-    return NextResponse.next({ request })
+  if (isPublic(pathname)) {
+    return NextResponse.next()
   }
 
-  return NextResponse.next({ request })
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!url || !anonKey || url === 'your_supabase_project_url') {
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = '/login'
+    return NextResponse.redirect(loginUrl)
+  }
+
+  const supabase = createServerClient(url, anonKey, {
+    cookies: {
+      getAll() { return request.cookies.getAll() },
+      setAll() {},
+    },
+  })
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = '/login'
+    return NextResponse.redirect(loginUrl)
+  }
+
+  return NextResponse.next()
 }
 
 export const config = {

@@ -80,16 +80,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       } catch {}
     }
 
-    // Tier 3: Mock data — any email/password works
-    const role = determineRoleFromEmail(email)
-    set({
-      isAuthenticated: true,
-      role,
-      userName: email.split('@')[0],
-      loading: false,
-      error: null,
-    })
-    return true
+    set({ loading: false, error: 'Invalid credentials' })
+    return false
   },
 
   logout: async () => {

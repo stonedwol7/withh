@@ -16,8 +16,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://withh.vercel.app"),
-  title: "WITHH - When you can't go alone, we'll go with you.",
-  description: "Trusted human accompaniment platform. Nobody should have to face important moments alone.",
+  title: "WITHH - Trusted Human Support. Never Alone.",
+  description: "Trusted human support for life's important moments.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -31,8 +31,8 @@ export const metadata: Metadata = {
     apple: "/logo-primary.png",
   },
   openGraph: {
-    title: "WITHH - When you can't go alone, we'll go with you.",
-    description: "Trusted human accompaniment platform.",
+    title: "WITHH - Trusted Human Support. Never Alone.",
+    description: "Trusted human support for life's important moments.",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
 };

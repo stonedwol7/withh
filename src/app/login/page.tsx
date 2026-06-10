@@ -68,10 +68,10 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           <div className="text-center mb-8 animate-fade-in">
             <BrandMark size={24} className="text-accent mx-auto mb-5 opacity-50" />
-            <p className="text-xl md:text-2xl text-foreground font-normal leading-relaxed">
-              &ldquo;When you can&apos;t go alone,<br />
-              <span className="text-accent font-semibold">we&apos;ll go with you.</span>&rdquo;
+            <p className="text-xl md:text-2xl text-foreground font-semibold">
+              Never Alone.
             </p>
+            <p className="text-sm text-muted-foreground mt-1">Trusted Human Support</p>
             <div className="flex items-center justify-center gap-3 mt-6">
               <div className="h-px flex-1 max-w-16 bg-border" />
               <BrandWordmark size="md" />

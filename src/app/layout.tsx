@@ -15,6 +15,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://withh.vercel.app"),
   title: "WITHH - When you can't go alone, we'll go with you.",
   description: "Trusted human accompaniment platform. Nobody should have to face important moments alone.",
   manifest: "/manifest.json",

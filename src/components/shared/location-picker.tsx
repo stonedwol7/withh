@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { MapPin, Navigation, Crosshair, Loader2 } from 'lucide-react'
 
 interface LocationPickerProps {
@@ -8,6 +8,12 @@ interface LocationPickerProps {
   destination: string
   onMeetingLocationChange: (val: string) => void
   onDestinationChange: (val: string) => void
+}
+
+interface SearchResult {
+  display_name: string
+  lat: string
+  lon: string
 }
 
 export function LocationPicker({
@@ -24,6 +30,14 @@ export function LocationPicker({
   const [geoLoading, setGeoLoading] = useState(false)
   const [center, setCenter] = useState<[number, number]>([12.9716, 77.5946])
   const M = useRef<any>(null)
+
+  const [meetingResults, setMeetingResults] = useState<SearchResult[]>([])
+  const [destinationResults, setDestinationResults] = useState<SearchResult[]>([])
+  const [searchingMeeting, setSearchingMeeting] = useState(false)
+  const [searchingDestination, setSearchingDestination] = useState(false)
+  const [focusedInput, setFocusedInput] = useState<'meeting' | 'destination' | null>(null)
+
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     const initMap = async () => {
@@ -104,42 +118,126 @@ export function LocationPicker({
     )
   }
 
-  const showOnMap = (address: string, marker: any) => {
-    if (!address || address.includes(',')) {
-      const parts = address.split(',').map(s => parseFloat(s.trim()))
-      if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-        marker?.setLatLng(parts)
-        mapInstance.current?.setView(parts, 15)
-      }
+  const tryParseCoords = (val: string): [number, number] | null => {
+    const parts = val.split(',').map(s => parseFloat(s.trim()))
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      return [parts[0], parts[1]]
     }
+    return null
+  }
+
+  const searchLocation = useCallback(async (query: string, setResults: (r: SearchResult[]) => void, setSearching: (v: boolean) => void) => {
+    if (!query.trim() || query.trim().length < 3) {
+      setResults([])
+      return
+    }
+    setSearching(true)
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query.trim())}&countrycodes=in&limit=5&addressdetails=1`,
+        { headers: { 'User-Agent': 'WITHH/1.0' } }
+      )
+      if (res.ok) {
+        const data = await res.json()
+        setResults(data || [])
+      }
+    } catch {}
+    setSearching(false)
+  }, [])
+
+  const handleInputChange = (
+    value: string,
+    setValue: (v: string) => void,
+    setResults: (r: SearchResult[]) => void,
+    setSearching: (v: boolean) => void
+  ) => {
+    setValue(value)
+    const coords = tryParseCoords(value)
+    if (coords) {
+      marker1.current?.setLatLng(coords)
+      mapInstance.current?.setView(coords, 15)
+    }
+    if (debounceTimer.current) clearTimeout(debounceTimer.current)
+    if (value.trim().length >= 3 && !coords) {
+      debounceTimer.current = setTimeout(() => {
+        searchLocation(value, setResults, setSearching)
+      }, 600)
+    } else {
+      setResults([])
+    }
+  }
+
+  const selectResult = (result: SearchResult, marker: any, setValue: (v: string) => void, setResults: (r: SearchResult[]) => void) => {
+    const lat = parseFloat(result.lat)
+    const lng = parseFloat(result.lon)
+    marker?.setLatLng([lat, lng])
+    mapInstance.current?.setView([lat, lng], 15)
+    setValue(result.display_name)
+    setResults([])
   }
 
   return (
     <div className="space-y-5">
-      <div>
+      <div className="relative">
         <label className="text-sm font-medium text-foreground mb-1.5 block">Meeting Location</label>
         <div className="relative">
           <MapPin className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground" />
           <input
             value={meetingLocation}
-            onChange={(e) => { onMeetingLocationChange(e.target.value); showOnMap(e.target.value, marker1.current) }}
-            placeholder="e.g. Home address, landmark"
-            className="w-full bg-card border border-input rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-colors"
+            onChange={(e) => handleInputChange(e.target.value, onMeetingLocationChange, setMeetingResults, setSearchingMeeting)}
+            onFocus={() => setFocusedInput('meeting')}
+            onBlur={() => setTimeout(() => setFocusedInput(null), 200)}
+            placeholder="e.g. Home address, landmark, pincode"
+            className="w-full bg-card border border-input rounded-xl py-3 pl-10 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-colors"
           />
+          {searchingMeeting && (
+            <Loader2 className="absolute right-3 top-3.5 w-4 h-4 animate-spin text-muted-foreground" />
+          )}
         </div>
+        {meetingResults.length > 0 && focusedInput === 'meeting' && (
+          <div className="absolute z-50 mt-1 w-full bg-card border border-border rounded-xl shadow-xl max-h-48 overflow-y-auto">
+            {meetingResults.map((r, i) => (
+              <button
+                key={i}
+                onMouseDown={() => selectResult(r, marker1.current, onMeetingLocationChange, setMeetingResults)}
+                className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border last:border-0"
+              >
+                {r.display_name}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div>
+      <div className="relative">
         <label className="text-sm font-medium text-foreground mb-1.5 block">Destination</label>
         <div className="relative">
           <Navigation className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground" />
           <input
             value={destination}
-            onChange={(e) => { onDestinationChange(e.target.value); showOnMap(e.target.value, marker2.current) }}
-            placeholder="e.g. Hospital, office address"
-            className="w-full bg-card border border-input rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-colors"
+            onChange={(e) => handleInputChange(e.target.value, onDestinationChange, setDestinationResults, setSearchingDestination)}
+            onFocus={() => setFocusedInput('destination')}
+            onBlur={() => setTimeout(() => setFocusedInput(null), 200)}
+            placeholder="e.g. Hospital, office address, pincode"
+            className="w-full bg-card border border-input rounded-xl py-3 pl-10 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-colors"
           />
+          {searchingDestination && (
+            <Loader2 className="absolute right-3 top-3.5 w-4 h-4 animate-spin text-muted-foreground" />
+          )}
         </div>
+        {destinationResults.length > 0 && focusedInput === 'destination' && (
+          <div className="absolute z-50 mt-1 w-full bg-card border border-border rounded-xl shadow-xl max-h-48 overflow-y-auto">
+            {destinationResults.map((r, i) => (
+              <button
+                key={i}
+                onMouseDown={() => selectResult(r, marker2.current, onDestinationChange, setDestinationResults)}
+                className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border last:border-0"
+              >
+                {r.display_name}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="relative">
@@ -161,7 +259,7 @@ export function LocationPicker({
       </div>
 
       <p className="text-xs text-muted-foreground text-center">
-        Click on the map to set locations · Drag markers to adjust · Use geolocation button for current position
+        Type an address or pincode to search · Click map to set locations · Drag markers to adjust
       </p>
     </div>
   )

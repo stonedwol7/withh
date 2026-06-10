@@ -1,18 +1,24 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth-store'
 import { useAppStore } from '@/store/use-store'
 import { ArrowLeft, UserCircle, Briefcase, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { BrandSignature } from '@/components/brand/brand-signature'
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const login = useAuthStore((s) => s.login)
   const initialize = useAppStore((s) => s.initialize)
   const [role, setRole] = useState<'customer' | 'partner' | null>(null)
+
+  useEffect(() => {
+    const r = searchParams.get('role')
+    if (r === 'partner') setRole('partner')
+  }, [searchParams])
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -162,10 +168,7 @@ export default function RegisterPage() {
             className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium hover:opacity-90 transition-all disabled:opacity-40 flex items-center justify-center gap-2 mt-2"
           >
             {submitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Creating...
-              </>
+              <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</>
             ) : (
               'Create Account'
             )}
@@ -182,5 +185,13 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <RegisterForm />
+    </Suspense>
   )
 }

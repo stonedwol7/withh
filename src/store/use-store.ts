@@ -1,5 +1,14 @@
 import { create } from 'zustand'
-import { supabase } from '@/lib/supabase/client'
+import type { SupabaseClient } from '@supabase/supabase-js'
+
+let _supabaseClient: SupabaseClient | null = null
+async function getSupabase(): Promise<SupabaseClient> {
+  if (!_supabaseClient) {
+    const mod = await import('@/lib/supabase/client')
+    _supabaseClient = mod.supabase
+  }
+  return _supabaseClient
+}
 import type {
   SupportRequest, SupportPartner, Match, JourneyMessage,
   Payment, Issue, SupportCategory, SupportDuration, GenderPreference,
@@ -90,6 +99,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   initialize: async () => {
     if (get().initialized) return
+    const supabase = await getSupabase()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { set({ initialized: true }); return }
 
@@ -107,7 +117,6 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     if (customerRes.data) set({ currentCustomerId: customerRes.data.id })
 
-    const reqPromises: Promise<any>[] = []
     const p1 = supabase.from('requests').select('*').order('created_at', { ascending: false })
     const p2 = supabase.from('support_partners').select('*')
 
@@ -125,7 +134,6 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     const msgMap: Record<string, JourneyMessage[]> = {}
     const assignmentMap: Record<string, any> = {}
-    const paymentArr: Payment[] = []
     const eventMap: Record<string, OperationEvent[]> = {}
 
     if (requests.length) {
@@ -166,6 +174,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const draft = get().requestDraft
     if (!draft.category || !draft.meetingLocation || !draft.date || !draft.time) return null
 
+    const supabase = await getSupabase()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
 
@@ -224,6 +233,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   getIssuesByRequest: (requestId) => get().issues.filter((i) => i.requestId === requestId),
 
   assignPartner: async (requestId, partnerId) => {
+    const supabase = await getSupabase()
     const now = new Date().toISOString()
     const { data, error } = await supabase.from('assignments').insert({
       request_id: requestId, partner_id: partnerId, assigned_by: get().authUserId,
@@ -259,7 +269,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     }))
   },
 
-  confirmMatch: (matchId) => {
+  confirmMatch: async (matchId) => {
+    const supabase = await getSupabase()
     const now = new Date().toISOString()
     const match = get().matches.find((m) => m.id === matchId)
     if (!match) return
@@ -283,7 +294,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     }))
   },
 
-  processPayment: (requestId) => {
+  processPayment: async (requestId) => {
+    const supabase = await getSupabase()
     const request = get().supportRequests.find((r) => r.id === requestId)
     if (!request) return
     const now = new Date().toISOString()
@@ -298,7 +310,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     }))
   },
 
-  updateRequestStatus: (requestId, status) => {
+  updateRequestStatus: async (requestId, status) => {
+    const supabase = await getSupabase()
     const now = new Date().toISOString()
     supabase.from('requests').update({ status }).eq('id', requestId)
     supabase.from('journey_messages').insert({
@@ -318,7 +331,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     }))
   },
 
-  addMessage: (requestId, message) => {
+  addMessage: async (requestId, message) => {
+    const supabase = await getSupabase()
     supabase.from('journey_messages').insert({
       request_id: requestId, sender_type: message.from, sender_name: message.senderName, content: message.content,
     })
@@ -332,7 +346,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     const now = new Date().toISOString()
     set((state) => ({ issues: state.issues.map((i) => i.id === issueId ? { ...i, status: 'resolved', resolution, resolvedAt: now } : i) }))
   },
-  addEvent: (requestId, event) => {
+  addEvent: async (requestId, event) => {
+    const supabase = await getSupabase()
     supabase.from('journey_events').insert({
       request_id: requestId, event_type: event.type, notes: event.content,
     })

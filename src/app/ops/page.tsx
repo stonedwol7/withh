@@ -124,7 +124,8 @@ export default function OpsDashboard() {
                 {aiAnalyses[req.id]?.riskFlags && aiAnalyses[req.id].riskFlags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-2">
                     {aiAnalyses[req.id].riskFlags.map((flag) => {
-                      const config = riskFlagLabels[flag]
+                      const config = riskFlagLabels[flag as keyof typeof riskFlagLabels]
+                      if (!config) return null
                       return (
                         <span
                           key={flag}

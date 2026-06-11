@@ -90,8 +90,8 @@ export default function OpsActiveSupports() {
                 </div>
 
                 <div className="flex gap-2">
-                  <span className="text-[10px] bg-blue/10 text-blue px-2 py-0.5 rounded-full">Customer: Priya S.</span>
-                  <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">Duration: {req.duration}</span>
+                  <span className="text-[10px] bg-blue/10 text-blue px-2 py-0.5 rounded-full">Confirmed</span>
+                  <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">ID: {req.id.slice(0, 8)}</span>
                 </div>
               </div>
             ))}
@@ -104,10 +104,10 @@ export default function OpsActiveSupports() {
                     <span className="text-sm font-semibold text-foreground">Confirmed</span>
                   </div>
                   <button
-                    onClick={() => {}}
+                    onClick={() => router.push(`/ops/matching/${req.id}`)}
                     className="flex items-center gap-1 text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-medium"
                   >
-                    <Play className="w-3 h-3" /> Start
+                    <Play className="w-3 h-3" /> Manage
                   </button>
                 </div>
                 <p className="text-xs text-muted-foreground">{req.destination}</p>

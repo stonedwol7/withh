@@ -1,7 +1,9 @@
 'use client'
 
-import { CustomerHeader } from '@/components/shared/customer-nav'
-import { Shield, CheckCircle, Clock, AlertTriangle, FileText } from 'lucide-react'
+import { PartnerHeader } from '@/components/shared/partner-nav'
+import { Shield, CheckCircle, Clock, AlertTriangle, FileText, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { useState } from 'react'
 import { InitialAvatar } from '@/components/shared/initial-avatar'
 import { useAuthStore } from '@/store/auth-store'
 import { useAppStore } from '@/store/use-store'
@@ -21,10 +23,21 @@ export default function StatusTrackerPage() {
   const bgStatus = partner.bgCheckStatus || 'not_submitted'
   const config = bgStatusConfig[bgStatus] || bgStatusConfig.not_submitted
   const StatusIcon = config.icon
+  const [uploading, setUploading] = useState(false)
+
+  const handleUpload = () => {
+    setUploading(true)
+    setTimeout(() => {
+      setUploading(false)
+      toast('Document upload coming soon.', {
+        description: 'Contact support@withh.in to submit your documents.',
+      })
+    }, 600)
+  }
 
   return (
     <div>
-      <CustomerHeader title="Verification Status" />
+      <PartnerHeader title="Verification Status" />
       <div className="px-5 pt-6 pb-6">
         <div className="flex items-center gap-4 bg-card rounded-2xl border border-border p-5 mb-6">
           <InitialAvatar name={partner.name} size="lg" />
@@ -63,12 +76,13 @@ export default function StatusTrackerPage() {
         </div>
 
         {bgStatus === 'not_submitted' && (
-          <Link
-            href="/partner/documents"
-            className="block w-full text-center py-3.5 rounded-xl bg-accent text-white font-medium text-sm hover:bg-accent/90 transition-colors"
+          <button
+            onClick={handleUpload}
+            disabled={uploading}
+            className="block w-full text-center py-3.5 rounded-xl bg-accent text-white font-medium text-sm hover:bg-accent/90 transition-colors disabled:opacity-60"
           >
-            Upload Documents
-          </Link>
+            {uploading ? <><Loader2 className="w-4 h-4 animate-spin inline mr-2" /> Please wait...</> : 'Upload Documents'}
+          </button>
         )}
 
         {bgStatus === 'failed' && (

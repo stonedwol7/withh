@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth-store'
 import { useAppStore } from '@/store/use-store'
-import { ArrowLeft, UserCircle, Briefcase, Loader2 } from 'lucide-react'
+import { ArrowLeft, UserCircle, Briefcase, Loader2, CheckCircle, Mail } from 'lucide-react'
 import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { BrandSignature } from '@/components/brand/brand-signature'
@@ -25,6 +25,7 @@ function RegisterForm() {
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirmed, setConfirmed] = useState(false)
 
   const handleRegister = async () => {
     if (!role || !name.trim() || !email.trim() || !password.trim()) {
@@ -34,41 +35,75 @@ function RegisterForm() {
     setSubmitting(true)
     setError(null)
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const hasSupabase = !!supabaseUrl && !supabaseUrl.includes('your_supabase')
+    try {
+      const { supabase } = await import('@/lib/supabase/client')
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password.trim(),
+      })
 
-    if (hasSupabase) {
-      try {
-        const { supabase } = await import('@/lib/supabase/client')
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: email.trim(),
-          password: password.trim(),
-        })
+      if (authError) {
+        setError(authError.message)
+        setSubmitting(false)
+        return
+      }
 
-        if (!authError && authData?.user) {
-          const table = role === 'customer' ? 'customers' : 'support_partners'
-          const { error: insertError } = await supabase.from(table).insert({
-            auth_id: authData.user.id,
-            name: name.trim(),
-            email: email.trim(),
-            phone: phone.trim() || null,
-          })
+      if (!authData?.user) {
+        setError('Account creation failed. Please try again.')
+        setSubmitting(false)
+        return
+      }
 
-          if (!insertError) {
-            await login(email.trim(), password.trim())
-            await initialize()
-            setSubmitting(false)
-            router.push(role === 'customer' ? '/customer' : '/partner')
-            return
-          }
-        }
-      } catch {}
+      const table = role === 'customer' ? 'customers' : 'support_partners'
+      const { error: insertError } = await supabase.from(table).insert({
+        auth_id: authData.user.id,
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim() || null,
+      })
+
+      if (insertError) {
+        setError('Failed to create profile. Please contact support.')
+        setSubmitting(false)
+        return
+      }
+
+      const ok = await login(email.trim(), password.trim())
+      if (ok) {
+        await initialize()
+        setSubmitting(false)
+        router.push(role === 'customer' ? '/customer' : '/partner')
+        return
+      }
+
+      setConfirmed(true)
+      setSubmitting(false)
+    } catch (err: any) {
+      setError(err?.message || 'Registration failed')
+      setSubmitting(false)
     }
+  }
 
-    await login(email.trim(), password.trim())
-    await initialize()
-    setSubmitting(false)
-    router.push(role === 'customer' ? '/customer' : '/partner')
+  if (confirmed) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+        <div className="w-full max-w-sm text-center">
+          <div className="w-14 h-14 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-5">
+            <Mail className="w-6 h-6 text-accent" />
+          </div>
+          <h1 className="text-xl font-bold text-foreground mb-2">Check your email</h1>
+          <p className="text-sm text-muted-foreground mb-6">
+            We sent a confirmation link to <span className="font-medium text-foreground">{email}</span>. Click the link to activate your account, then sign in.
+          </p>
+          <Link
+            href="/login"
+            className="inline-block bg-accent text-white px-6 py-3 rounded-xl font-medium text-sm hover:opacity-90 transition-all"
+          >
+            Go to Sign In
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -81,10 +116,10 @@ function RegisterForm() {
       </header>
 
       <div className="flex-1 max-w-md mx-auto w-full px-5 pt-8 pb-6">
-        <h1 className="text-2xl font-bold text-foreground mb-2 animate-fade-in">Create Account</h1>
-        <p className="text-sm text-muted-foreground mb-8 animate-fade-in">Join WITHH as a customer or support partner.</p>
+        <h1 className="text-2xl font-bold text-foreground mb-2">Create Account</h1>
+        <p className="text-sm text-muted-foreground mb-8">Join WITHH as a customer or support partner.</p>
 
-        <div className="flex gap-3 mb-8 animate-fade-in-up">
+        <div className="flex gap-3 mb-8">
           <button
             onClick={() => setRole('customer')}
             className={`flex-1 p-4 rounded-2xl border text-center transition-all hover:border-accent/30 ${
@@ -113,7 +148,7 @@ function RegisterForm() {
           </button>
         </div>
 
-        <div className="space-y-4 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
+        <div className="space-y-4">
           <div>
             <label className="text-sm font-medium text-foreground mb-1.5 block" htmlFor="regName">Full Name *</label>
             <input
@@ -165,7 +200,7 @@ function RegisterForm() {
           <button
             onClick={handleRegister}
             disabled={submitting || !role || !name.trim() || !email.trim() || !password.trim()}
-            className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium hover:opacity-90 transition-all disabled:opacity-40 flex items-center justify-center gap-2 mt-2"
+            className="w-full bg-accent text-white py-3.5 rounded-xl font-medium hover:opacity-90 transition-all disabled:opacity-40 flex items-center justify-center gap-2 mt-2 text-sm shadow-lg shadow-accent/20"
           >
             {submitting ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</>
@@ -175,14 +210,10 @@ function RegisterForm() {
           </button>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground mt-6 animate-fade-in" style={{ animationDelay: '300ms' }}>
+        <p className="text-center text-sm text-muted-foreground mt-6">
           Already have an account?{' '}
           <Link href="/login" className="text-accent font-medium hover:underline">Sign in</Link>
         </p>
-
-        <div className="text-center mt-6 animate-fade-in">
-          <span className="text-xs text-muted-foreground/60">Demo mode</span>
-        </div>
       </div>
     </div>
   )

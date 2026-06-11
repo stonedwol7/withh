@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation'
 import { useAppStore } from '@/store/use-store'
-import { OpsHeader } from '@/components/shared/ops-nav'
 import { format } from 'date-fns'
 import { Shield, Star, CheckCircle, Globe, Award } from 'lucide-react'
 

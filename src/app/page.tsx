@@ -28,7 +28,6 @@ const whyChoose = [
   { icon: Heart, title: 'Trusted Human Support', desc: 'Real people who are vetted, trained, and committed to your wellbeing.' },
   { icon: UserCheck, title: 'Verified Partners', desc: 'Every partner passes identity verification and background checks.' },
   { icon: Users, title: 'Human Presence', desc: 'Someone by your side for life\'s important moments.' },
-  { icon: Shield, title: 'Real Assistance', desc: 'Practical, reliable help from start to finish.' },
   { icon: MessageSquare, title: 'Reliable Communication', desc: 'Clear updates and direct contact throughout your journey.' },
   { icon: Star, title: 'Careful Matching', desc: 'We consider your preferences, language, and needs in every match.' },
 ]
@@ -39,7 +38,6 @@ const trustItems = [
   { icon: Phone, title: 'Emergency Escalation', desc: 'Dedicated support team reachable throughout every journey.' },
   { icon: Heart, title: 'Support Team', desc: 'Real humans who care — available by phone, chat, or email.' },
   { icon: Users, title: 'Transparent Process', desc: 'You know who your partner is before you confirm. No surprises.' },
-  { icon: Check, title: 'Clear Expectations', desc: 'Everything is explained upfront — cost, process, roles, and safety.' },
 ]
 
 const partnerPoints = [

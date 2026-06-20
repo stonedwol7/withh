@@ -52,7 +52,7 @@
   --color-withh-blue: #4F6BFF;
   --color-withh-lavender: #B9B4F6;
   --color-withh-bg: #F2F4F7;
-  --color-copper: #18B7A0;
+  --color-copper: #4F6BFF;
   --color-alabaster: #F2F4F7;
   --color-slate: #0D1B3D;
   --color-partner-dark: #0D1B3D;
@@ -72,32 +72,32 @@
   --card-foreground: #0D1B3D;
   --popover: #FFFFFF;
   --popover-foreground: #0D1B3D;
-  --primary: #18B7A0;
+  --primary: #4F6BFF;
   --primary-foreground: #FFFFFF;
   --secondary: #B9B4F6;
   --secondary-foreground: #0D1B3D;
   --muted: #F2F4F7;
   --muted-foreground: rgba(13, 27, 61, 0.6);
-  --accent: #4F6BFF;
+  --accent: #18B7A0;
   --accent-foreground: #FFFFFF;
   --destructive: #EF4444;
   --border: rgba(13, 27, 61, 0.1);
   --input: rgba(13, 27, 61, 0.1);
-  --ring: #18B7A0;
-  --chart-1: #18B7A0;
-  --chart-2: #4F6BFF;
+  --ring: #4F6BFF;
+  --chart-1: #4F6BFF;
+  --chart-2: #18B7A0;
   --chart-3: #B9B4F6;
   --chart-4: #0D1B3D;
   --chart-5: #F2F4F7;
   --radius: 0.75rem;
   --sidebar: #FFFFFF;
   --sidebar-foreground: #0D1B3D;
-  --sidebar-primary: #18B7A0;
+  --sidebar-primary: #4F6BFF;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: rgba(185, 180, 246, 0.2);
   --sidebar-accent-foreground: #0D1B3D;
   --sidebar-border: rgba(13, 27, 61, 0.1);
-  --sidebar-ring: #18B7A0;
+  --sidebar-ring: #4F6BFF;
 }
 
 @layer base {
@@ -120,7 +120,7 @@
     @apply ring-2 ring-ring/20;
   }
   ::selection {
-    background: #18B7A020;
+    background: #4F6BFF20;
     color: inherit;
   }
 }
@@ -216,7 +216,7 @@
   transition: all 0.25s ease;
 }
 .card-hover:hover {
-  border-color: #18B7A020;
+  border-color: #4F6BFF20;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 

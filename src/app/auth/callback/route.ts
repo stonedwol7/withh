@@ -37,12 +37,14 @@ export async function GET(request: Request) {
         .from('bookings')
         .insert({
           customer_id: user.id,
-          category: draft.category,
-          principal_name: draft.principalName,
-          exact_meeting_spot: draft.location,
+          category: 'companionship',
+          principal_name: draft.principalName || 'Myself',
+          exact_meeting_spot: draft.location || '',
           scheduled_at: draft.scheduledAt,
-          requires_female_partner: draft.requiresFemalePartner ?? false,
-          total_price: draft.totalPrice,
+          requires_female_partner: draft.preferredGender === 'female',
+          duration_estimate_minutes: (draft.durationHours || 2) * 60,
+          total_price: draft.totalPrice ?? 299 * (draft.durationHours || 2),
+          notes: draft.userNeedDescription || null,
         } as any)
 
       if (insertError) {

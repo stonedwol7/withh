@@ -1,13 +1,31 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+export interface MatchedPartner {
+  id: string
+  name: string
+  age?: number
+  languages: string[]
+  bio: string
+  rating: number
+  ratingCount: number
+  completedJourneys: number
+  tags: string[]
+  avatarUrl?: string | null
+  gender?: string
+  supportLabel?: string
+}
+
 export interface BookingDraft {
-  category: 'medical' | 'government' | 'travel' | 'general' | null
-  location: string
+  forWhom: 'myself' | 'lovedOne' | null
   principalName: string
+  userNeedDescription: string
   scheduledAt: string | null
-  requiresFemalePartner: boolean
+  location: string
+  durationHours: number
+  preferredGender: 'any' | 'female' | 'male'
   totalPrice: number
+  suggestedPartner: MatchedPartner | null
 }
 
 interface BookingStore {
@@ -16,13 +34,18 @@ interface BookingStore {
   reset: () => void
 }
 
+const HOURLY_RATE = 299
+
 const initialDraft: BookingDraft = {
-  category: null,
-  location: '',
+  forWhom: null,
   principalName: '',
+  userNeedDescription: '',
   scheduledAt: null,
-  requiresFemalePartner: false,
-  totalPrice: 0,
+  location: '',
+  durationHours: 2,
+  preferredGender: 'any',
+  totalPrice: HOURLY_RATE * 2,
+  suggestedPartner: null,
 }
 
 export const useBookingStore = create<BookingStore>()(
@@ -35,3 +58,5 @@ export const useBookingStore = create<BookingStore>()(
     { name: 'withh-booking-draft' }
   )
 )
+
+export { HOURLY_RATE }

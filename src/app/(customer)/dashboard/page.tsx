@@ -11,7 +11,7 @@ type Booking = Database['public']['Tables']['bookings']['Row']
 
 export default function DashboardPage() {
   const router = useRouter()
-  const supabaseRef = useRef<ReturnType<typeof createClient>>()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
   const [userName, setUserName] = useState('')
   const [loading, setLoading] = useState(true)

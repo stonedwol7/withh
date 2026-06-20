@@ -11,7 +11,7 @@ type Booking = Database['public']['Tables']['bookings']['Row']
 
 export default function PartnerPage() {
   const router = useRouter()
-  const supabaseRef = useRef<ReturnType<typeof createClient>>()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const getSupabase = () => supabaseRef.current ?? (supabaseRef.current = createClient())
   const [assignments, setAssignments] = useState<Booking[]>([])
   const [partnerName, setPartnerName] = useState('')

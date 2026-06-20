@@ -12,7 +12,7 @@ type Message = Database['public']['Tables']['messages']['Row']
 
 export default function ActiveMissionPage({ params }: { params: Promise<{ bookingId: string }> }) {
   const router = useRouter()
-  const supabaseRef = useRef<ReturnType<typeof createClient>>()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const getSupabase = () => supabaseRef.current ?? (supabaseRef.current = createClient())
   const [booking, setBooking] = useState<Booking | null>(null)
   const [messages, setMessages] = useState<Message[]>([])

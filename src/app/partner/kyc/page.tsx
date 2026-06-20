@@ -16,7 +16,7 @@ const STEPS = ['Identity', 'Bank & Address', 'Guarantor', 'Services & Terms'] as
 
 export default function KYCOnboardingPage() {
   const router = useRouter()
-  const supabaseRef = useRef<ReturnType<typeof createClient>>()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const getSupabase = () => supabaseRef.current ?? (supabaseRef.current = createClient())
   const [step, setStep] = useState(0)
   const [userId, setUserId] = useState('')

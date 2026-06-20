@@ -42,12 +42,20 @@
   --color-green: #22C55E;
   --color-amber: #F59E0B;
   --color-red: #EF4444;
-  --color-blue: #5B8DEF;
+  --color-blue: #4F6BFF;
   --color-purple: #8B5CF6;
   --color-whatsapp: #25D366;
   --color-pink: #EC4899;
-  --color-teal: #14B8A6;
   --color-orange: #F97316;
+  --color-withh-navy: #0D1B3D;
+  --color-withh-teal: #18B7A0;
+  --color-withh-blue: #4F6BFF;
+  --color-withh-lavender: #B9B4F6;
+  --color-withh-bg: #F2F4F7;
+  --color-copper: #18B7A0;
+  --color-alabaster: #F2F4F7;
+  --color-slate: #0D1B3D;
+  --color-partner-dark: #0D1B3D;
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -58,38 +66,38 @@
 }
 
 :root {
-  --background: #FAFAFA;
-  --foreground: #111827;
+  --background: #F2F4F7;
+  --foreground: #0D1B3D;
   --card: #FFFFFF;
-  --card-foreground: #111827;
+  --card-foreground: #0D1B3D;
   --popover: #FFFFFF;
-  --popover-foreground: #111827;
-  --primary: #111827;
-  --primary-foreground: #FAFAFA;
-  --secondary: #F3F4F6;
-  --secondary-foreground: #111827;
-  --muted: #F3F4F6;
-  --muted-foreground: #6B7280;
-  --accent: #5B8DEF;
+  --popover-foreground: #0D1B3D;
+  --primary: #18B7A0;
+  --primary-foreground: #FFFFFF;
+  --secondary: #B9B4F6;
+  --secondary-foreground: #0D1B3D;
+  --muted: #F2F4F7;
+  --muted-foreground: rgba(13, 27, 61, 0.6);
+  --accent: #4F6BFF;
   --accent-foreground: #FFFFFF;
   --destructive: #EF4444;
-  --border: #E5E7EB;
-  --input: #E5E7EB;
-  --ring: #5B8DEF;
-  --chart-1: #5B8DEF;
-  --chart-2: #22C55E;
-  --chart-3: #F59E0B;
-  --chart-4: #EF4444;
-  --chart-5: #111827;
+  --border: rgba(13, 27, 61, 0.1);
+  --input: rgba(13, 27, 61, 0.1);
+  --ring: #18B7A0;
+  --chart-1: #18B7A0;
+  --chart-2: #4F6BFF;
+  --chart-3: #B9B4F6;
+  --chart-4: #0D1B3D;
+  --chart-5: #F2F4F7;
   --radius: 0.75rem;
   --sidebar: #FFFFFF;
-  --sidebar-foreground: #111827;
-  --sidebar-primary: #5B8DEF;
+  --sidebar-foreground: #0D1B3D;
+  --sidebar-primary: #18B7A0;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F3F4F6;
-  --sidebar-accent-foreground: #111827;
-  --sidebar-border: #E5E7EB;
-  --sidebar-ring: #5B8DEF;
+  --sidebar-accent: rgba(185, 180, 246, 0.2);
+  --sidebar-accent-foreground: #0D1B3D;
+  --sidebar-border: rgba(13, 27, 61, 0.1);
+  --sidebar-ring: #18B7A0;
 }
 
 @layer base {
@@ -98,7 +106,9 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   button:focus-visible,
   a:focus-visible {
@@ -109,6 +119,22 @@
   select:focus-visible {
     @apply ring-2 ring-ring/20;
   }
+  ::selection {
+    background: #18B7A020;
+    color: inherit;
+  }
+}
+
+@utility shadow-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+@utility shadow-card-md {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+@utility shadow-card-lg {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06), 0 4px 10px rgba(0, 0, 0, 0.03);
 }
 
 @utility animate-status-pulse {
@@ -187,7 +213,23 @@
 }
 
 .card-hover {
-  transition: border-color 0.2s ease;
+  transition: all 0.25s ease;
+}
+.card-hover:hover {
+  border-color: #18B7A020;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes sectionIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card-lift {
+  transition: all 0.25s ease;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
 }
 
 @media (prefers-reduced-motion: reduce) {

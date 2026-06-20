@@ -1,4 +1,4 @@
-import type { SupportRequest, SupportPartner, AiAnalysis, AiMatchRecommendation, AiPartnerScore, AiTag, AiRiskFlag } from './types'
+import type { SupportRequest, SupportPartner, AiAnalysis, AiMatchRecommendation, AiPartnerScore, AiTag, AiRiskFlag } from './ai-types'
 
 function buildAnalysisPrompt(request: SupportRequest): string {
   return `Analyze this support request and return JSON with:

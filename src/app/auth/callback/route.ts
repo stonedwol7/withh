@@ -1,27 +1,59 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/'
+  const redirectTo = searchParams.get('redirectTo') ?? '/dashboard'
 
-  if (code) {
-    const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        for (const table of ['customers', 'support_partners', 'operations_team'] as const) {
-          const { data } = await supabase.from(table).select('id').eq('auth_id', user.id).maybeSingle()
-          if (data) {
-            const route = table === 'customers' ? '/customer' : table === 'support_partners' ? '/partner' : '/ops'
-            return NextResponse.redirect(`${origin}${route}`)
-          }
-        }
-        return NextResponse.redirect(`${origin}/customer`)
+  if (!code) {
+    return NextResponse.redirect(`${origin}/login?error=missing_code`)
+  }
+
+  const supabase = await createClient()
+  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+
+  if (exchangeError) {
+    return NextResponse.redirect(`${origin}/login?error=auth_failed`)
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.redirect(`${origin}/login?error=no_user`)
+  }
+
+  const cookieStore = await cookies()
+  const pendingBookingRaw = cookieStore.get('withh_pending_booking')?.value
+
+  if (pendingBookingRaw) {
+    try {
+      const draft = JSON.parse(decodeURIComponent(pendingBookingRaw))
+
+      const { error: insertError } = await supabase
+        .from('bookings')
+        .insert({
+          customer_id: user.id,
+          category: draft.category,
+          principal_name: draft.principalName,
+          exact_meeting_spot: draft.location,
+          scheduled_at: draft.scheduledAt,
+          requires_female_partner: draft.requiresFemalePartner ?? false,
+          total_price: draft.totalPrice,
+        } as any)
+
+      if (insertError) {
+        return NextResponse.redirect(`${origin}/dashboard?error=booking_save_failed`)
       }
+    } catch {
+      return NextResponse.redirect(`${origin}/dashboard?error=booking_parse_failed`)
+    } finally {
+      cookieStore.delete('withh_pending_booking')
     }
   }
-  return NextResponse.redirect(`${origin}/login?error=auth_failed`)
+
+  return NextResponse.redirect(`${origin}${redirectTo}`)
 }

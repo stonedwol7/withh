@@ -7,7 +7,7 @@ import type {
   AiPartnerScore,
   AiMatchRecommendation,
   AiProviderConfig,
-} from './types'
+} from './ai-types'
 import * as openrouter from './ai-openrouter'
 
 const providerConfig: AiProviderConfig = {
@@ -21,7 +21,7 @@ export function configureAi(config: Partial<AiProviderConfig>) {
 function mockAnalyzeRequest(request: SupportRequest): AiAnalysis {
   const tags: AiTag[] = []
 
-  const catMap: Record<string, AiTag> = {
+  const catMap: Record<string, string> = {
     hospital: 'hospital-visit',
     government: 'government',
     appointment: 'appointment',
@@ -33,7 +33,7 @@ function mockAnalyzeRequest(request: SupportRequest): AiAnalysis {
   if (request.genderPreference === 'female') tags.push('female-preference')
   if (request.genderPreference === 'male') tags.push('male-preference')
 
-  const langMap: Record<string, AiTag> = {
+  const langMap: Record<string, string> = {
     kannada: 'kannada',
     english: 'english',
     hindi: 'hindi',
@@ -98,7 +98,7 @@ export async function generateMatchRecommendation(
     catch {}
   }
 
-  const scored = partners.filter((p) => p.available).map((p) => mockScorePartner(request, p, repeatPartnerIds.includes(p.id))).sort((a, b) => b.score - a.score)
+  const scored = partners.filter((p) => p.available).map((p) => mockScorePartner(request, p, repeatPartnerIds.includes(p.id)) as { partnerId: string; score: number; reasons: string[] }).sort((a, b) => b.score - a.score)
   const [recommended, ...alternatives] = scored
   return {
     requestId: request.id,
@@ -109,7 +109,7 @@ export async function generateMatchRecommendation(
   }
 }
 
-export const riskFlagLabels: Record<AiRiskFlag, { label: string; color: string; icon: string }> = {
+export const riskFlagLabels: Record<string, { label: string; color: string; icon: string }> = {
   HIGH_ANXIETY: { label: 'High Anxiety', color: 'bg-red/5 text-red border-red/20', icon: '😰' },
   ELDERLY_CUSTOMER: { label: 'Elderly Customer', color: 'bg-amber/5 text-amber border-amber/20', icon: '👴' },
   ACCESSIBILITY_REQUIRED: { label: 'Accessibility Required', color: 'bg-purple/5 text-purple border-purple/20', icon: '♿' },
@@ -119,7 +119,7 @@ export const riskFlagLabels: Record<AiRiskFlag, { label: string; color: string; 
   SOMEONE_ELSE_INVOLVED: { label: 'Someone Else Involved', color: 'bg-teal/5 text-teal border-teal/20', icon: '👥' },
 }
 
-export const tagLabels: Record<AiTag, string> = {
+export const tagLabels: Record<string, string> = {
   'hospital-visit': 'Hospital Visit', 'elderly-support': 'Elderly Support',
   'female-preference': 'Female Preference', 'male-preference': 'Male Preference',
   kannada: 'Kannada', english: 'English', hindi: 'Hindi', tamil: 'Tamil',

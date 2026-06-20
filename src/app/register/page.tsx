@@ -1,9 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useAuthStore } from '@/store/auth-store'
-import { useAppStore } from '@/store/use-store'
-import { ArrowLeft, UserCircle, Briefcase, Loader2, CheckCircle, Mail } from 'lucide-react'
+import { ArrowLeft, UserCircle, Briefcase, Loader2, Mail } from 'lucide-react'
 import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { BrandSignature } from '@/components/brand/brand-signature'
@@ -11,8 +9,6 @@ import { BrandSignature } from '@/components/brand/brand-signature'
 function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const login = useAuthStore((s) => s.login)
-  const initialize = useAppStore((s) => s.initialize)
   const [role, setRole] = useState<'customer' | 'partner' | null>(null)
 
   useEffect(() => {
@@ -36,10 +32,18 @@ function RegisterForm() {
     setError(null)
 
     try {
-      const { supabase } = await import('@/lib/supabase/client')
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: email.trim(),
         password: password.trim(),
+        options: {
+          data: {
+            role,
+            name: name.trim(),
+            phone: phone.trim() || null,
+          },
+        },
       })
 
       if (authError) {
@@ -54,30 +58,14 @@ function RegisterForm() {
         return
       }
 
-      const table = role === 'customer' ? 'customers' : 'support_partners'
-      const { error: insertError } = await supabase.from(table).insert({
-        auth_id: authData.user.id,
-        name: name.trim(),
-        email: email.trim(),
-        phone: phone.trim() || null,
-      })
-
-      if (insertError) {
-        setError('Failed to create profile. Please contact support.')
+      if (authData.user.identities?.length === 0) {
+        setConfirmed(true)
         setSubmitting(false)
         return
       }
 
-      const ok = await login(email.trim(), password.trim())
-      if (ok) {
-        await initialize()
-        setSubmitting(false)
-        router.push(role === 'customer' ? '/customer' : '/partner')
-        return
-      }
-
-      setConfirmed(true)
       setSubmitting(false)
+      router.push(role === 'customer' ? '/dashboard' : '/partner')
     } catch (err: any) {
       setError(err?.message || 'Registration failed')
       setSubmitting(false)
@@ -115,81 +103,81 @@ function RegisterForm() {
         <BrandSignature markSize={16} />
       </header>
 
-      <div className="flex-1 max-w-md mx-auto w-full px-5 pt-8 pb-6">
-        <h1 className="text-2xl font-bold text-foreground mb-2">Create Account</h1>
-        <p className="text-sm text-muted-foreground mb-8">Join WITHH as a customer or support partner.</p>
+      <div className="flex-1 max-w-md mx-auto w-full px-5 pt-6 pb-6">
+        <h1 className="text-xl md:text-2xl font-bold text-foreground mb-1">Create Account</h1>
+        <p className="text-sm text-muted-foreground mb-6 md:mb-8">Join WITHH as a customer or support partner.</p>
 
-        <div className="flex gap-3 mb-8">
+        <div className="flex gap-2.5 md:gap-3 mb-6 md:mb-8">
           <button
             onClick={() => setRole('customer')}
-            className={`flex-1 p-4 rounded-2xl border text-center transition-all hover:border-accent/30 ${
+            className={`flex-1 p-3.5 md:p-4 rounded-xl md:rounded-2xl border text-center transition-all hover:border-accent/30 min-h-[80px] ${
               role === 'customer' ? 'border-accent bg-accent/5 ring-1 ring-accent/20' : 'border-border bg-card'
             }`}
           >
-            <div className={`w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center ${
+            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl mx-auto mb-1.5 flex items-center justify-center ${
               role === 'customer' ? 'bg-accent/10' : 'bg-muted'
             }`}>
-              <UserCircle className={`w-5 h-5 ${role === 'customer' ? 'text-accent' : 'text-muted-foreground'}`} />
+              <UserCircle className={`w-4 h-4 md:w-5 md:h-5 ${role === 'customer' ? 'text-accent' : 'text-muted-foreground'}`} />
             </div>
-            <p className={`text-sm font-medium ${role === 'customer' ? 'text-accent' : 'text-foreground'}`}>Customer</p>
+            <p className={`text-xs md:text-sm font-medium ${role === 'customer' ? 'text-accent' : 'text-foreground'}`}>Customer</p>
           </button>
           <button
             onClick={() => setRole('partner')}
-            className={`flex-1 p-4 rounded-2xl border text-center transition-all hover:border-green/30 ${
+            className={`flex-1 p-3.5 md:p-4 rounded-xl md:rounded-2xl border text-center transition-all hover:border-green/30 min-h-[80px] ${
               role === 'partner' ? 'border-green bg-green/5 ring-1 ring-green/20' : 'border-border bg-card'
             }`}
           >
-            <div className={`w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center ${
+            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl mx-auto mb-1.5 flex items-center justify-center ${
               role === 'partner' ? 'bg-green/10' : 'bg-muted'
             }`}>
-              <Briefcase className={`w-5 h-5 ${role === 'partner' ? 'text-green' : 'text-muted-foreground'}`} />
+              <Briefcase className={`w-4 h-4 md:w-5 md:h-5 ${role === 'partner' ? 'text-green' : 'text-muted-foreground'}`} />
             </div>
-            <p className={`text-sm font-medium ${role === 'partner' ? 'text-green' : 'text-foreground'}`}>Partner</p>
+            <p className={`text-xs md:text-sm font-medium ${role === 'partner' ? 'text-green' : 'text-foreground'}`}>Partner</p>
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3.5 md:space-y-4">
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block" htmlFor="regName">Full Name *</label>
+            <label className="text-xs md:text-sm font-medium text-foreground mb-1 block" htmlFor="regName">Full Name *</label>
             <input
               id="regName"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your full name"
-              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all"
+              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all min-h-[48px]"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block" htmlFor="regEmail">Email *</label>
+            <label className="text-xs md:text-sm font-medium text-foreground mb-1 block" htmlFor="regEmail">Email *</label>
             <input
               id="regEmail"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               type="email"
-              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all"
+              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all min-h-[48px]"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block" htmlFor="regPhone">Phone</label>
+            <label className="text-xs md:text-sm font-medium text-foreground mb-1 block" htmlFor="regPhone">Phone</label>
             <input
               id="regPhone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+91 98765 43210"
               type="tel"
-              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all"
+              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all min-h-[48px]"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block" htmlFor="regPassword">Password *</label>
+            <label className="text-xs md:text-sm font-medium text-foreground mb-1 block" htmlFor="regPassword">Password *</label>
             <input
               id="regPassword"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="At least 6 characters"
               type="password"
-              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all"
+              className="w-full bg-card border border-input rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-accent transition-all min-h-[48px]"
             />
           </div>
 
@@ -200,7 +188,7 @@ function RegisterForm() {
           <button
             onClick={handleRegister}
             disabled={submitting || !role || !name.trim() || !email.trim() || !password.trim()}
-            className="w-full bg-accent text-white py-3.5 rounded-xl font-medium hover:opacity-90 transition-all disabled:opacity-40 flex items-center justify-center gap-2 mt-2 text-sm shadow-lg shadow-accent/20"
+            className="w-full bg-accent text-white py-3.5 rounded-xl font-medium hover:opacity-90 transition-all disabled:opacity-40 flex items-center justify-center gap-2 mt-2 text-sm shadow-lg shadow-accent/20 min-h-[48px]"
           >
             {submitting ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</>

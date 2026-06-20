@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowRight, Calendar, Clock, MapPin, LogOut, Plus } from 'lucide-react'
@@ -11,12 +11,13 @@ type Booking = Database['public']['Tables']['bookings']['Row']
 
 export default function DashboardPage() {
   const router = useRouter()
-  const supabase = createClient()
+  const supabaseRef = useRef<ReturnType<typeof createClient>>()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [userName, setUserName] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const supabase = supabaseRef.current ?? (supabaseRef.current = createClient())
     let cancelled = false
     async function init() {
       try {

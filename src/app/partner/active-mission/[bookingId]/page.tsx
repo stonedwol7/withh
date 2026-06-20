@@ -12,7 +12,8 @@ type Message = Database['public']['Tables']['messages']['Row']
 
 export default function ActiveMissionPage({ params }: { params: Promise<{ bookingId: string }> }) {
   const router = useRouter()
-  const supabase = createClient()
+  const supabaseRef = useRef<ReturnType<typeof createClient>>()
+  const getSupabase = () => supabaseRef.current ?? (supabaseRef.current = createClient())
   const [booking, setBooking] = useState<Booking | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -31,13 +32,13 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
     async function init() {
       const bookingId = (await params).bookingId
 
-      const { data: auth } = await supabase.auth.getUser()
+      const { data: auth } = await getSupabase().auth.getUser()
       if (!auth.user) {
         router.replace('/login')
         return
       }
 
-      const { data: b, error } = await supabase
+      const { data: b, error } = await getSupabase()
         .from('bookings')
         .select('*')
         .eq('id', bookingId)
@@ -58,7 +59,7 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
       }
 
       // Fetch customer name
-      const { data: customerProfile } = await supabase
+      const { data: customerProfile } = await getSupabase()
         .from('profiles')
         .select('full_name')
         .eq('id', b.customer_id)
@@ -67,7 +68,7 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
       setCustomerName(customerProfile?.full_name || 'Customer')
 
       // Fetch messages
-      const { data: msgs } = await supabase
+      const { data: msgs } = await getSupabase()
         .from('messages')
         .select('*')
         .eq('booking_id', bookingId)
@@ -78,7 +79,7 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
       setLoading(false)
 
       // Realtime subscription
-      const channel = supabase
+      const channel = getSupabase()
         .channel(`booking-${bookingId}`)
         .on('postgres_changes', {
           event: 'INSERT',
@@ -90,11 +91,11 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
         })
         .subscribe()
 
-      return () => { supabase.removeChannel(channel) }
+      return () => { getSupabase().removeChannel(channel) }
     }
 
     init()
-  }, [supabase, router, params])
+  }, [router, params])
 
   // Live timer
   useEffect(() => {
@@ -130,9 +131,9 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
     if (!msg || !booking) return
     setSending(true)
 
-    const { error } = await supabase.from('messages').insert({
+    const { error } = await getSupabase().from('messages').insert({
       booking_id: booking.id,
-      sender_id: (await supabase.auth.getUser()).data.user!.id,
+      sender_id: (await getSupabase().auth.getUser()).data.user!.id,
       content: msg,
     })
 
@@ -156,7 +157,7 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
     const confirmed = window.confirm('Cancel this mission?')
     if (!confirmed) return
 
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('bookings')
       .update({ status: 'cancelled', ended_at: new Date().toISOString() })
       .eq('id', booking.id)
@@ -171,7 +172,7 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
 
   const completeMission = async () => {
     if (!booking) return
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('bookings')
       .update({ status: 'completed', ended_at: new Date().toISOString() })
       .eq('id', booking.id)

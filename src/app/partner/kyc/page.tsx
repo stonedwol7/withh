@@ -16,7 +16,8 @@ const STEPS = ['Identity', 'Bank & Address', 'Guarantor', 'Services & Terms'] as
 
 export default function KYCOnboardingPage() {
   const router = useRouter()
-  const supabase = createClient()
+  const supabaseRef = useRef<ReturnType<typeof createClient>>()
+  const getSupabase = () => supabaseRef.current ?? (supabaseRef.current = createClient())
   const [step, setStep] = useState(0)
   const [userId, setUserId] = useState('')
   const [loading, setLoading] = useState(true)
@@ -55,16 +56,16 @@ export default function KYCOnboardingPage() {
 
   useEffect(() => {
     async function init() {
-      const { data: auth } = await supabase.auth.getUser()
+      const { data: auth } = await getSupabase().auth.getUser()
       if (!auth.user) { router.replace('/login'); return }
 
-      const { data: profile } = await supabase
+      const { data: profile } = await getSupabase()
         .from('profiles').select('role').eq('id', auth.user.id).single()
 
       if (profile?.role !== 'partner') { router.replace('/dashboard'); return }
 
       // Check existing KYC status
-      const { data: meta } = await supabase
+      const { data: meta } = await getSupabase()
         .from('partners_meta').select('*').eq('id', auth.user.id).single()
 
       if (meta?.kyc_status === 'submitted' || meta?.kyc_status === 'verified') {
@@ -81,16 +82,16 @@ export default function KYCOnboardingPage() {
       setLoading(false)
     }
     init()
-  }, [router, supabase])
+  }, [router])
 
   const uploadFile = async (file: File, prefix: string): Promise<string | null> => {
     setUploading(prefix)
     try {
       const ext = file.name.split('.').pop()
       const path = `${userId}/${prefix}-${Date.now()}.${ext}`
-      const { error } = await supabase.storage.from('kyc_docs').upload(path, file)
+      const { error } = await getSupabase().storage.from('kyc_docs').upload(path, file)
       if (error) { toast.error(`Upload failed: ${error.message}`); return null }
-      const { data: urlData } = supabase.storage.from('kyc_docs').getPublicUrl(path)
+      const { data: urlData } = getSupabase().storage.from('kyc_docs').getPublicUrl(path)
       return urlData.publicUrl
     } catch {
       toast.error('Upload failed')
@@ -119,7 +120,7 @@ export default function KYCOnboardingPage() {
 
     setSubmitting(true)
     try {
-      const { error } = await supabase.from('partners_meta').upsert({
+      const { error } = await getSupabase().from('partners_meta').upsert({
         id: userId,
         pan_number: panNumber || null,
         bank_account_number: bankAccount || null,

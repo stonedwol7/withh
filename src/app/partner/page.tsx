@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Calendar, Clock, MapPin, LogOut, User, ShieldAlert } from 'lucide-react'
@@ -11,7 +11,8 @@ type Booking = Database['public']['Tables']['bookings']['Row']
 
 export default function PartnerPage() {
   const router = useRouter()
-  const supabase = createClient()
+  const supabaseRef = useRef<ReturnType<typeof createClient>>()
+  const getSupabase = () => supabaseRef.current ?? (supabaseRef.current = createClient())
   const [assignments, setAssignments] = useState<Booking[]>([])
   const [partnerName, setPartnerName] = useState('')
   const [loading, setLoading] = useState(true)
@@ -20,13 +21,13 @@ export default function PartnerPage() {
     let cancelled = false
     async function init() {
       try {
-        const { data: auth } = await supabase.auth.getUser()
+        const { data: auth } = await getSupabase().auth.getUser()
         if (!auth.user) {
           router.replace('/login')
           return
         }
 
-        const { data: profile } = await supabase
+        const { data: profile } = await getSupabase()
           .from('profiles')
           .select('full_name, role')
           .eq('id', auth.user.id)
@@ -38,7 +39,7 @@ export default function PartnerPage() {
         }
 
         // Check KYC status
-        const { data: meta } = await supabase
+        const { data: meta } = await getSupabase()
           .from('partners_meta')
           .select('kyc_status')
           .eq('id', auth.user.id)
@@ -51,7 +52,7 @@ export default function PartnerPage() {
 
         if (!cancelled) setPartnerName(profile?.full_name || 'Partner')
 
-        const { data: myAssignments } = await supabase
+        const { data: myAssignments } = await getSupabase()
           .from('bookings')
           .select('*')
           .eq('partner_id', auth.user.id)
@@ -68,11 +69,11 @@ export default function PartnerPage() {
 
     init()
     return () => { cancelled = true }
-  }, [router, supabase])
+  }, [router])
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut()
+      await getSupabase().auth.signOut()
       router.push('/')
     } catch {
       toast.error('Failed to sign out')

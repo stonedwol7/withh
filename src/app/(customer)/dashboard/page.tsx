@@ -57,9 +57,10 @@ export default function DashboardPage() {
 
     init()
     return () => { cancelled = true }
-  }, [router, supabase])
+  }, [router])
 
   const handleLogout = async () => {
+    const supabase = supabaseRef.current ?? (supabaseRef.current = createClient())
     try {
       await supabase.auth.signOut()
       router.push('/')

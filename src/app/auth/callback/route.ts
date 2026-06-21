@@ -38,12 +38,10 @@ export async function GET(request: Request) {
         .insert({
           customer_id: user.id,
           category: 'companionship',
-          principal_name: draft.principalName || 'Myself',
+          principal_name: 'Myself',
           exact_meeting_spot: draft.location || '',
           scheduled_at: draft.scheduledAt,
           requires_female_partner: draft.preferredGender === 'female',
-          duration_estimate_minutes: (draft.durationHours || 2) * 60,
-          total_price: draft.totalPrice ?? 299 * (draft.durationHours || 2),
           notes: draft.userNeedDescription || null,
         } as any)
 

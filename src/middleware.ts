@@ -32,15 +32,16 @@ export async function middleware(request: NextRequest) {
 
   // Public routes — never require auth. Booking flow is fully anonymous
   // until the "Secure Booking" button triggers sign-in.
-  const publicPaths = ['/', '/login', '/register', '/forgot-password', '/book', '/help', '/contact', '/privacy', '/terms']
+  const publicPaths = ['/', '/login', '/register', '/forgot-password', '/book', '/book/requested', '/help', '/contact', '/privacy', '/terms']
   if (publicPaths.includes(path)) {
     return response
   }
 
   const isPartnerRoute = path.startsWith('/partner')
   const isCustomerDashboard = path.startsWith('/dashboard')
+  const isAppRoute = path.startsWith('/journey') || path.startsWith('/messages') || path.startsWith('/profile')
 
-  if ((isPartnerRoute || isCustomerDashboard) && !user) {
+  if ((isPartnerRoute || isCustomerDashboard || isAppRoute) && !user) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/login'
     redirectUrl.searchParams.set('redirectTo', path)

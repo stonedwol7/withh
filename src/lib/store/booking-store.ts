@@ -17,14 +17,12 @@ export interface MatchedPartner {
 }
 
 export interface BookingDraft {
-  forWhom: 'myself' | 'lovedOne' | null
-  principalName: string
   userNeedDescription: string
   scheduledAt: string | null
   location: string
-  durationHours: number
   preferredGender: 'any' | 'female' | 'male'
-  totalPrice: number
+  language: string
+  trustedContact: string
   suggestedPartner: MatchedPartner | null
 }
 
@@ -34,17 +32,13 @@ interface BookingStore {
   reset: () => void
 }
 
-const HOURLY_RATE = 299
-
 const initialDraft: BookingDraft = {
-  forWhom: null,
-  principalName: '',
   userNeedDescription: '',
   scheduledAt: null,
   location: '',
-  durationHours: 2,
   preferredGender: 'any',
-  totalPrice: HOURLY_RATE * 2,
+  language: '',
+  trustedContact: '',
   suggestedPartner: null,
 }
 
@@ -58,5 +52,3 @@ export const useBookingStore = create<BookingStore>()(
     { name: 'withh-booking-draft' }
   )
 )
-
-export { HOURLY_RATE }

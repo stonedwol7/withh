@@ -13,11 +13,11 @@ export default function LandingPage() {
           <h1 className="text-[10px] font-semibold text-foreground/30 tracking-[0.2em] uppercase mb-6">
             WITHH
           </h1>
-          <h2 className="text-[2rem] leading-[1.15] font-semibold text-foreground tracking-tight mb-3">
-            When you can&apos;t go alone,<br />we&apos;ll go with you.
+          <h2 className="text-[1.75rem] leading-[1.15] font-semibold text-foreground tracking-tight mb-3">
+            Trusted Human Support
           </h2>
           <p className="text-sm text-muted-foreground/70 leading-relaxed">
-            Trusted human support for life&apos;s important moments.
+            Support from a trusted person when it matters most.
           </p>
         </div>
 

@@ -1,47 +1,97 @@
-import { Shield, CheckCircle, Clock, Users } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
+import { Shield, CheckCircle, Clock, Users, Loader2 } from 'lucide-react'
+import { redirect } from 'next/navigation'
 
-const timeline = [
-  { stage: 'Request received', status: 'done', icon: Shield, time: 'Today, 10:30 AM' },
-  { stage: 'Reviewing details', status: 'done', icon: Clock, time: 'Today, 10:32 AM' },
-  { stage: 'Partner assigned', status: 'current', icon: Users, time: 'Finding the right match...' },
-  { stage: 'Support confirmed', status: 'upcoming', icon: CheckCircle, time: 'Pending' },
-  { stage: 'Support completed', status: 'upcoming', icon: CheckCircle, time: 'Pending' },
-]
+const EVENT_ICONS: Record<string, any> = {
+  request_created: Shield,
+  under_review: Clock,
+  partner_assigned: Users,
+  partner_accepted: Users,
+  journey_started: Clock,
+  journey_completed: CheckCircle,
+}
 
-export default function JourneyPage() {
+const EVENT_LABELS: Record<string, string> = {
+  request_created: 'Request received',
+  under_review: 'Reviewing details',
+  partner_assigned: 'Partner assigned',
+  partner_accepted: 'Partner accepted',
+  journey_started: 'Support started',
+  journey_completed: 'Support completed',
+}
+
+export default async function JourneyPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) redirect('/login')
+
+  const { data: rawRequests } = await supabase
+    .from('requests')
+    .select('*')
+    .eq('customer_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(5)
+
+  const requests = (rawRequests || []) as any[]
+
   return (
     <div className="max-w-lg mx-auto px-5 pt-8 pb-8">
       <h1 className="text-2xl font-semibold text-foreground tracking-tight mb-1">Journey</h1>
       <p className="text-sm text-muted-foreground mb-8">What&apos;s happening next.</p>
 
-      <div className="relative">
-        <div className="absolute left-[15px] top-2 bottom-2 w-px bg-border" />
-
+      {(!requests || requests.length === 0) ? (
+        <div className="text-center py-16">
+          <p className="text-sm text-muted-foreground/50">No requests yet.</p>
+          <p className="text-xs text-muted-foreground/30 mt-1">Submit a request to see your journey here.</p>
+        </div>
+      ) : (
         <div className="space-y-6">
-          {timeline.map((item, i) => {
-            const Icon = item.icon
+          {requests.map((req) => {
+            const statusSteps = [
+              { key: 'requested', label: 'Request received' },
+              { key: 'assigned', label: 'Partner assigned' },
+              { key: 'in-progress', label: 'Support started' },
+              { key: 'completed', label: 'Support completed' },
+            ]
+
+            const currentIdx = statusSteps.findIndex((s) => s.key === req.status)
+
             return (
-              <div key={i} className="flex gap-4">
-                <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                  item.status === 'done' ? 'bg-primary/10 text-primary' :
-                  item.status === 'current' ? 'bg-accent/10 text-accent animate-status-pulse' :
-                  'bg-muted text-muted-foreground/30'
-                }`}>
-                  <Icon className="w-4 h-4" />
-                </div>
-                <div className="pt-1">
-                  <p className={`text-sm font-medium ${
-                    item.status === 'done' ? 'text-foreground' :
-                    item.status === 'current' ? 'text-accent' :
-                    'text-muted-foreground/40'
-                  }`}>{item.stage}</p>
-                  <p className="text-[10px] text-muted-foreground/50 mt-0.5">{item.time}</p>
+              <div key={req.id} className="bg-card rounded-2xl border border-border p-4">
+                <p className="text-sm font-medium text-foreground mb-3">
+                  {req.description?.slice(0, 60)}{req.description && req.description.length > 60 ? '...' : ''}
+                </p>
+                <p className="text-[10px] text-muted-foreground/50 mb-4">
+                  {req.date || ''}{req.time ? ` at ${req.time}` : ''}
+                </p>
+                <div className="space-y-3">
+                  {statusSteps.map((step, i) => {
+                    const status = i < currentIdx ? 'done' : i === currentIdx ? 'current' : 'upcoming'
+                    const Icon = status === 'done' ? CheckCircle : status === 'current' ? Loader2 : Clock
+                    return (
+                      <div key={step.key} className="flex items-center gap-3">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+                          status === 'done' ? 'bg-primary/10 text-primary' :
+                          status === 'current' ? 'bg-accent/10 text-accent' :
+                          'bg-muted text-muted-foreground/30'
+                        }`}>
+                          <Icon className={`w-3 h-3 ${status === 'current' ? 'animate-spin' : ''}`} />
+                        </div>
+                        <span className={`text-xs ${
+                          status === 'done' ? 'text-foreground' :
+                          status === 'current' ? 'text-accent font-medium' :
+                          'text-muted-foreground/40'
+                        }`}>{step.label}</span>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             )
           })}
         </div>
-      </div>
+      )}
     </div>
   )
 }

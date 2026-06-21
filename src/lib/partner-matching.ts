@@ -1,26 +1,24 @@
 import type { MatchedPartner } from '@/lib/store/booking-store'
 import type { ParsedIntent } from '@/lib/intent-parser'
 import { createClient } from '@/lib/supabase/client'
-import type { Database } from '@/lib/types/database.types'
-
-type PartnerMeta = Database['public']['Tables']['partners_meta']['Row']
 
 export async function findBestMatch(intent: ParsedIntent, location: string): Promise<MatchedPartner | null> {
   const supabase = createClient()
 
-  const { data: partners } = await supabase
-    .from('partners_meta')
-    .select('*, profiles!inner(full_name, avatar_url)')
-    .eq('kyc_status', 'verified')
+  const { data: raw } = await (supabase as any)
+    .from('support_partners')
+    .select('*')
+    .eq('verification_status', 'verified')
     .overlaps('languages', intent.languages.length > 0 ? intent.languages : ['english'])
-    .returns<(PartnerMeta & { profiles: { full_name: string | null; avatar_url: string | null } })[]>()
     .limit(20)
+
+  const partners = (raw || []) as any[]
 
   if (!partners || partners.length === 0) {
     return getFallbackPartner(intent)
   }
 
-  const scored = partners.map((p) => ({
+  const scored = partners.map((p: any) => ({
     partner: p,
     score: scorePartner(p, intent),
   }))
@@ -32,22 +30,23 @@ export async function findBestMatch(intent: ParsedIntent, location: string): Pro
 
   return {
     id: best.partner.id,
-    name: best.partner.profiles?.full_name || 'A Support Partner',
+    name: best.partner.name,
     languages: best.partner.languages,
-    bio: best.partner.bio || 'Experienced and verified support partner.',
-    rating: best.partner.rating_avg || 0,
-    ratingCount: best.partner.rating_count || 0,
-    completedJourneys: 0,
-    tags: best.partner.categories,
-    avatarUrl: best.partner.profiles?.avatar_url,
+    bio: best.partner.bio || 'Verified support partner.',
+    rating: Number(best.partner.rating) || 0,
+    ratingCount: 0,
+    completedJourneys: best.partner.completed_journeys || 0,
+    tags: best.partner.specialties,
+    avatarUrl: best.partner.photo_url,
+    gender: best.partner.gender,
     supportLabel: intent.supportLabel,
   }
 }
 
-function scorePartner(partner: PartnerMeta, intent: ParsedIntent): number {
+function scorePartner(partner: any, intent: ParsedIntent): number {
   let score = 0
 
-  const partnerCats = (partner.categories || []).map((c: string) => c.toLowerCase())
+  const partnerCats = (partner.specialties || []).map((c: string) => c.toLowerCase())
   for (const ctx of intent.careContext) {
     if (partnerCats.includes(ctx) || partnerCats.some((pc: string) => pc.includes(ctx))) {
       score += 3
@@ -61,42 +60,52 @@ function scorePartner(partner: PartnerMeta, intent: ParsedIntent): number {
     }
   }
 
-  if (partner.rating_avg) score += partner.rating_avg * 0.5
+  if (intent.preferredGender !== 'any' && partner.gender === intent.preferredGender) {
+    score += 2
+  }
+
+  if (partner.rating) score += Number(partner.rating) * 0.5
 
   return score
 }
 
 function getFallbackPartner(intent: ParsedIntent): MatchedPartner {
-  const labels: Record<string, { name: string; bio: string; tags: string[] }> = {
+  const labels: Record<string, { name: string; bio: string; tags: string[]; gender: string }> = {
     'Medical companionship': {
       name: 'Priya Sharma',
       bio: 'Quiet, calm presence with experience accompanying patients in hospitals and clinics across Bangalore.',
       tags: ['medical', 'elderly', 'kannada', 'hindi', 'english'],
+      gender: 'female',
     },
     'Elderly care companionship': {
       name: 'Anita Rao',
       bio: 'Warm and patient companion skilled in elderly care. Comfortable with medical appointments and daily errands.',
       tags: ['elderly', 'companionship', 'kannada', 'english'],
+      gender: 'female',
     },
     'Government office assistance': {
       name: 'Ravi Kumar',
       bio: 'Experienced navigating Bangalore government offices, courts, and documentation. Speaks Kannada, Hindi, and English.',
       tags: ['government', 'documentation', 'kannada', 'hindi', 'english'],
+      gender: 'male',
     },
     'Travel assistance': {
       name: 'Suresh Patel',
       bio: 'Reliable travel companion familiar with Bangalore airport, railway stations, and bus terminals.',
       tags: ['travel', 'general', 'kannada', 'hindi', 'english'],
+      gender: 'male',
     },
     'Legal support accompaniment': {
       name: 'Vikram Joshi',
       bio: 'Accompanied clients to over 30 court appearances and legal proceedings. Calm under pressure.',
       tags: ['court', 'government', 'kannada', 'english'],
+      gender: 'male',
     },
     'Emotional support companionship': {
       name: 'Meera Nair',
       bio: 'Kind, empathetic listener who provides a reassuring presence during difficult moments.',
       tags: ['companionship', 'general', 'kannada', 'english', 'hindi'],
+      gender: 'female',
     },
   }
 
@@ -104,6 +113,7 @@ function getFallbackPartner(intent: ParsedIntent): MatchedPartner {
     name: 'Aditya Verma',
     bio: 'Verified support partner with experience across a wide range of situations. Friendly, reliable, and professional.',
     tags: ['general', 'kannada', 'hindi', 'english'],
+    gender: 'male',
   }
 
   return {
@@ -116,6 +126,7 @@ function getFallbackPartner(intent: ParsedIntent): MatchedPartner {
     completedJourneys: 36,
     tags: fallback.tags,
     avatarUrl: null,
+    gender: fallback.gender,
     supportLabel: intent.supportLabel,
   }
 }

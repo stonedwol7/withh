@@ -26,6 +26,24 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=no_user`)
   }
 
+  const admin = createAdminClient()
+
+  const { data: existing } = await admin
+    .from('customers')
+    .select('id')
+    .eq('auth_id', user.id)
+    .maybeSingle()
+
+  if (!existing) {
+    await admin.from('customers').insert({
+      auth_id: user.id,
+      name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Customer',
+      email: user.email,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    } as any)
+  }
+
   const cookieStore = await cookies()
   const pendingBookingRaw = cookieStore.get('withh_pending_booking')?.value
 
@@ -41,7 +59,6 @@ export async function GET(request: Request) {
         time = parts[1]?.slice(0, 5)
       }
 
-      const admin = createAdminClient()
       const { error: insertError } = await admin
         .from('requests')
         .insert({

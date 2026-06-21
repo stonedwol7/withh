@@ -49,13 +49,14 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isPartnerRoute && user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+    const { data: partners } = await supabase
+      .from('support_partners')
+      .select('id')
+      .eq('auth_id', user.id)
+      .limit(1)
 
-    if (profile?.role !== 'partner') {
+    const isPartner = partners && partners.length > 0
+    if (!isPartner) {
       const redirectUrl = request.nextUrl.clone()
       redirectUrl.pathname = '/dashboard'
       return NextResponse.redirect(redirectUrl)

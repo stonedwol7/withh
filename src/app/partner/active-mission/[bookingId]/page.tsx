@@ -4,18 +4,13 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Clock, MapPin, User, Send, ChevronDown, ChevronUp, X, Loader2 } from 'lucide-react'
-import type { Database } from '@/lib/types/database.types'
 import { toast } from 'sonner'
-
-type Booking = Database['public']['Tables']['bookings']['Row']
-type Message = Database['public']['Tables']['messages']['Row']
 
 export default function ActiveMissionPage({ params }: { params: Promise<{ bookingId: string }> }) {
   const router = useRouter()
-  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
-  const getSupabase = () => supabaseRef.current ?? (supabaseRef.current = createClient())
-  const [booking, setBooking] = useState<Booking | null>(null)
-  const [messages, setMessages] = useState<Message[]>([])
+  const getSupabase = useCallback(() => createClient(), [])
+  const [request, setRequest] = useState<any>(null)
+  const [messages, setMessages] = useState<any[]>([])
   const [input, setInput] = useState('')
   const [elapsed, setElapsed] = useState(0)
   const [showChat, setShowChat] = useState(true)
@@ -23,101 +18,103 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
   const [sending, setSending] = useState(false)
   const [customerName, setCustomerName] = useState('')
   const chatEnd = useRef<HTMLDivElement>(null)
+  const channelRef = useRef<any>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function init() {
+      const bookingId = (await params).bookingId
+
+      const { data: auth } = await getSupabase().auth.getUser()
+      if (!auth.user) { router.replace('/login'); return }
+
+      const { data: reqs } = await (getSupabase() as any)
+        .from('requests')
+        .select('*')
+        .eq('id', bookingId)
+        .limit(1)
+
+      const r = (reqs || [])[0]
+      if (!r) {
+        toast.error('Mission not found')
+        router.replace('/partner')
+        return
+      }
+
+      if (cancelled) return
+      setRequest(r)
+
+      const { data: customers } = await (getSupabase() as any)
+        .from('customers')
+        .select('name')
+        .eq('auth_id', r.customer_id)
+        .limit(1)
+
+      const customer = ((customers || [])[0] as any)
+      setCustomerName(customer?.name || 'Customer')
+
+      const { data: msgs } = await (getSupabase() as any)
+        .from('journey_messages')
+        .select('*')
+        .eq('request_id', bookingId)
+        .order('created_at', { ascending: true })
+
+      if (msgs) setMessages(msgs as any[])
+
+      setLoading(false)
+
+      const channel = (getSupabase() as any)
+        .channel(`mission-${bookingId}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'journey_messages',
+          filter: `request_id=eq.${bookingId}`,
+        }, (payload: any) => {
+          setMessages((prev: any[]) => [...prev, payload.new])
+        })
+        .subscribe()
+
+      channelRef.current = channel
+    }
+
+    init()
+
+    return () => {
+      cancelled = true
+      if (channelRef.current) {
+        getSupabase().removeChannel(channelRef.current)
+        channelRef.current = null
+      }
+    }
+  }, [router, params, getSupabase])
 
   const scrollToBottom = useCallback(() => {
     chatEnd.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
 
+  useEffect(() => { scrollToBottom() }, [messages, scrollToBottom])
+
   useEffect(() => {
-    async function init() {
-      const bookingId = (await params).bookingId
-
-      const { data: auth } = await getSupabase().auth.getUser()
-      if (!auth.user) {
-        router.replace('/login')
-        return
-      }
-
-      const { data: b, error } = await getSupabase()
-        .from('bookings')
-        .select('*')
-        .eq('id', bookingId)
-        .single()
-
-      if (error || !b) {
-        toast.error('Mission not found')
-        router.replace('/dashboard')
-        return
-      }
-
-      setBooking(b)
-
-      if (b.customer_id !== auth.user.id && b.partner_id !== auth.user.id) {
-        toast.error('Access denied')
-        router.replace('/dashboard')
-        return
-      }
-
-      // Fetch customer name
-      const { data: customerProfile } = await getSupabase()
-        .from('profiles')
-        .select('full_name')
-        .eq('id', b.customer_id)
-        .single()
-
-      setCustomerName(customerProfile?.full_name || 'Customer')
-
-      // Fetch messages
-      const { data: msgs } = await getSupabase()
-        .from('messages')
-        .select('*')
-        .eq('booking_id', bookingId)
-        .order('created_at', { ascending: true })
-
-      if (msgs) setMessages(msgs)
-
-      setLoading(false)
-
-      // Realtime subscription
-      const channel = getSupabase()
-        .channel(`booking-${bookingId}`)
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `booking_id=eq.${bookingId}`,
-        }, (payload) => {
-          setMessages((prev) => [...prev, payload.new as Message])
-        })
-        .subscribe()
-
-      return () => { getSupabase().removeChannel(channel) }
-    }
-
-    init()
-  }, [router, params])
-
-  // Live timer
-  useEffect(() => {
-    if (!booking?.started_at) return
-    const start = new Date(booking.started_at).getTime()
+    if (!request?.started_at) return
+    const start = new Date(request.started_at).getTime()
     const tick = () => setElapsed(Math.floor((Date.now() - start) / 1000))
     tick()
     const interval = setInterval(tick, 1000)
     return () => clearInterval(interval)
-  }, [booking?.started_at])
+  }, [request?.started_at])
 
-  // beforeunload warning
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
-      e.preventDefault()
-      e.returnValue = ''
+      if (request?.status === 'in-progress') {
+        e.preventDefault()
+        e.returnValue = ''
+      }
     }
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)
-  }, [])
-
-  useEffect(() => { scrollToBottom() }, [messages, scrollToBottom])
+  }, [request?.status])
 
   const formatElapsed = (s: number) => {
     const h = Math.floor(s / 3600)
@@ -128,14 +125,20 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
 
   const sendMessage = async () => {
     const msg = input.trim()
-    if (!msg || !booking) return
+    if (!msg || !request) return
     setSending(true)
 
-    const { error } = await getSupabase().from('messages').insert({
-      booking_id: booking.id,
-      sender_id: (await getSupabase().auth.getUser()).data.user!.id,
-      content: msg,
-    })
+    const { data: auth } = await getSupabase().auth.getUser()
+    const { error } = await (getSupabase() as any)
+      .from('journey_messages')
+      .insert({
+        request_id: request.id,
+        sender_id: auth.user?.id,
+        sender_type: 'partner',
+        sender_name: 'Partner',
+        content: msg,
+        created_at: new Date().toISOString(),
+      })
 
     if (error) {
       toast.error('Failed to send message')
@@ -153,60 +156,60 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
   }
 
   const cancelMission = async () => {
-    if (!booking) return
+    if (!request) return
     const confirmed = window.confirm('Cancel this mission?')
     if (!confirmed) return
 
-    const { error } = await getSupabase()
-      .from('bookings')
-      .update({ status: 'cancelled', ended_at: new Date().toISOString() })
-      .eq('id', booking.id)
+    const { error } = await (getSupabase() as any)
+      .from('requests')
+      .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+      .eq('id', request.id)
 
     if (error) {
       toast.error('Failed to cancel')
     } else {
       toast.success('Mission cancelled')
-      router.push('/dashboard')
+      router.push('/partner')
     }
   }
 
   const completeMission = async () => {
-    if (!booking) return
-    const { error } = await getSupabase()
-      .from('bookings')
-      .update({ status: 'completed', ended_at: new Date().toISOString() })
-      .eq('id', booking.id)
+    if (!request) return
+    const { error } = await (getSupabase() as any)
+      .from('requests')
+      .update({ status: 'completed', updated_at: new Date().toISOString() })
+      .eq('id', request.id)
 
     if (error) {
       toast.error('Failed to complete')
     } else {
       toast.success('Mission complete!', { duration: 5000 })
-      router.push('/dashboard')
+      router.push('/partner')
     }
   }
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-50 bg-partner-dark flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-alabaster/30 border-t-alabaster rounded-full animate-spin" />
+      <div className="fixed inset-0 z-50 bg-[#0D1B3D] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
       </div>
     )
   }
 
-  if (!booking) return null
+  if (!request) return null
 
   return (
-    <div className="fixed inset-0 z-50 bg-partner-dark flex flex-col">
+    <div className="fixed inset-0 z-50 bg-[#0D1B3D] flex flex-col">
       {/* Header */}
-      <header className="bg-partner-dark/80 backdrop-blur-xl border-b border-alabaster/10 px-5 h-14 flex items-center justify-between shrink-0">
+      <header className="bg-[#0D1B3D]/80 backdrop-blur-xl border-b border-white/10 px-5 h-14 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-2 h-2 rounded-full bg-green animate-pulse" />
-          <span className="text-sm font-semibold text-alabaster capitalize">{booking.category}</span>
+          <span className="text-sm font-semibold text-white capitalize">{request.category || 'Mission'}</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm font-mono text-alabaster/80">{formatElapsed(elapsed)}</span>
-          <button onClick={() => router.push('/dashboard')} className="p-1.5 rounded-lg hover:bg-alabaster/10 transition-colors">
-            <X className="w-4 h-4 text-alabaster/60" />
+          <span className="text-sm font-mono text-white/80">{formatElapsed(elapsed)}</span>
+          <button onClick={() => router.push('/partner')} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+            <X className="w-4 h-4 text-white/60" />
           </button>
         </div>
       </header>
@@ -214,26 +217,26 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
       {/* Content area */}
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
         {/* Customer card */}
-        <div className="bg-alabaster/5 rounded-xl p-4 border border-alabaster/10">
+        <div className="bg-white/5 rounded-xl p-4 border border-white/10">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-copper/20 flex items-center justify-center">
-                <User className="w-5 h-5 text-copper" />
+              <div className="w-10 h-10 rounded-full bg-[#4F6BFF]/20 flex items-center justify-center">
+                <User className="w-5 h-5 text-[#4F6BFF]" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-alabaster">{customerName}</p>
-                <p className="text-[10px] text-alabaster/50">Customer</p>
+                <p className="text-sm font-semibold text-white">{customerName}</p>
+                <p className="text-[10px] text-white/50">Customer</p>
               </div>
             </div>
           </div>
-          <div className="space-y-1.5 text-xs text-alabaster/60">
+          <div className="space-y-1.5 text-xs text-white/60">
             <div className="flex items-center gap-2">
               <MapPin className="w-3 h-3 shrink-0" />
-              <span>{booking.exact_meeting_spot}</span>
+              <span>{request.meeting_location || request.destination || 'No location set'}</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-3 h-3 shrink-0" />
-              <span>{new Date(booking.scheduled_at).toLocaleString('en-IN')}</span>
+              <span>{request.date || ''}{request.time ? ` at ${request.time}` : ''}</span>
             </div>
           </div>
         </div>
@@ -241,25 +244,25 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
         {/* Chat toggle */}
         <button
           onClick={() => setShowChat(!showChat)}
-          className="w-full flex items-center justify-between bg-alabaster/5 rounded-xl px-4 py-3 border border-alabaster/10"
+          className="w-full flex items-center justify-between bg-white/5 rounded-xl px-4 py-3 border border-white/10"
         >
-          <span className="text-sm font-medium text-alabaster">Chat</span>
-          {showChat ? <ChevronDown className="w-4 h-4 text-alabaster/60" /> : <ChevronUp className="w-4 h-4 text-alabaster/60" />}
+          <span className="text-sm font-medium text-white">Chat</span>
+          {showChat ? <ChevronDown className="w-4 h-4 text-white/60" /> : <ChevronUp className="w-4 h-4 text-white/60" />}
         </button>
 
         {/* Messages */}
         {showChat && (
-          <div className="bg-alabaster/5 rounded-xl border border-alabaster/10">
+          <div className="bg-white/5 rounded-xl border border-white/10">
             <div className="max-h-[35vh] overflow-y-auto p-4 space-y-3">
               {messages.length === 0 && (
-                <p className="text-xs text-alabaster/40 text-center py-4">No messages yet. Say hello!</p>
+                <p className="text-xs text-white/40 text-center py-4">No messages yet. Say hello!</p>
               )}
-              {messages.map((m) => (
-                <div key={m.id} className={`flex ${m.sender_id === booking.customer_id ? '' : 'justify-end'}`}>
+              {messages.map((m: any) => (
+                <div key={m.id} className={`flex ${m.sender_type === 'customer' ? '' : 'justify-end'}`}>
                   <div className={`max-w-[80%] rounded-xl px-3.5 py-2 text-sm ${
-                    m.sender_id === booking.customer_id
-                      ? 'bg-alabaster/10 text-alabaster'
-                      : 'bg-copper text-white'
+                    m.sender_type === 'customer'
+                      ? 'bg-white/10 text-white'
+                      : 'bg-[#4F6BFF] text-white'
                   }`}>
                     {m.content}
                   </div>
@@ -269,18 +272,18 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
             </div>
 
             {/* Input */}
-            <div className="border-t border-alabaster/10 p-3 flex items-center gap-2">
+            <div className="border-t border-white/10 p-3 flex items-center gap-2">
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type a message..."
-                className="flex-1 bg-alabaster/10 rounded-xl py-2.5 px-4 text-sm text-alabaster placeholder-alabaster/30 focus:outline-none focus:ring-2 focus:ring-copper/30 transition-all min-h-[40px]"
+                className="flex-1 bg-white/10 rounded-xl py-2.5 px-4 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#4F6BFF]/30 transition-all min-h-[40px]"
               />
               <button
                 onClick={sendMessage}
                 disabled={!input.trim() || sending}
-                className="bg-copper p-2.5 rounded-xl hover:opacity-90 transition-all disabled:opacity-30 min-h-[40px] min-w-[40px] flex items-center justify-center"
+                className="bg-[#4F6BFF] p-2.5 rounded-xl hover:opacity-90 transition-all disabled:opacity-30 min-h-[40px] min-w-[40px] flex items-center justify-center"
               >
                 {sending ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Send className="w-4 h-4 text-white" />}
               </button>
@@ -290,10 +293,10 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
       </div>
 
       {/* Bottom actions */}
-      <div className="shrink-0 border-t border-alabaster/10 px-5 py-4 flex gap-3">
+      <div className="shrink-0 border-t border-white/10 px-5 py-4 flex gap-3">
         <button
           onClick={cancelMission}
-          className="flex-1 bg-alabaster/10 text-alabaster py-3 rounded-xl text-sm font-medium hover:bg-alabaster/15 transition-all"
+          className="flex-1 bg-white/10 text-white py-3 rounded-xl text-sm font-medium hover:bg-white/15 transition-all"
         >
           Cancel
         </button>

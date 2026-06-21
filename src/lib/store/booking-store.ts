@@ -17,9 +17,12 @@ export interface MatchedPartner {
 }
 
 export interface BookingDraft {
+  forWhom: 'myself' | 'lovedOne' | null
+  principalName: string
   userNeedDescription: string
   scheduledAt: string | null
   location: string
+  durationHours: number
   preferredGender: 'any' | 'female' | 'male'
   language: string
   trustedContact: string
@@ -32,10 +35,15 @@ interface BookingStore {
   reset: () => void
 }
 
+export const HOURLY_RATE = 299
+
 const initialDraft: BookingDraft = {
+  forWhom: null,
+  principalName: '',
   userNeedDescription: '',
   scheduledAt: null,
   location: '',
+  durationHours: 2,
   preferredGender: 'any',
   language: '',
   trustedContact: '',

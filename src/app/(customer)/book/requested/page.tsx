@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useBookingStore } from '@/lib/store/booking-store'
-import { Loader2, Shield, Users, Star, Sparkles } from 'lucide-react'
-import { toast } from 'sonner'
+import { Shield, Sparkles } from 'lucide-react'
 
 export default function RequestedPage() {
   const router = useRouter()
@@ -17,7 +16,7 @@ export default function RequestedPage() {
   const partner = draft.suggestedPartner
 
   useEffect(() => {
-    const t = setTimeout(() => setShowMatch(true), 2000)
+    const t = setTimeout(() => setShowMatch(true), 2500)
     return () => clearTimeout(t)
   }, [])
 
@@ -44,27 +43,24 @@ export default function RequestedPage() {
           .insert({
             customer_id: auth.user.id,
             category: 'companionship',
+            principal_name: draft.principalName || 'Myself',
             description: draft.userNeedDescription || null,
             meeting_location: draft.location || '',
             date,
             time,
-            preferred_gender: draft.preferredGender === 'female' ? 'female' : draft.preferredGender === 'male' ? 'male' : 'no-preference',
-            status: 'requested',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+            duration: `${draft.durationHours || 2} hours`,
           } as any)
 
         if (insertError) {
-          toast.error(insertError.message)
+          alert('Something went wrong. Please try again.')
           setSubmitting(false)
           return
         }
 
-        toast.success('Support confirmed!')
         reset()
         router.push('/journey')
       } catch {
-        toast.error('Failed to create booking')
+        alert('Something went wrong. Please try again.')
         setSubmitting(false)
       }
       return
@@ -76,7 +72,7 @@ export default function RequestedPage() {
     })
 
     if (oauthError) {
-      toast.error(oauthError.message)
+      alert('Something went wrong. Please try again.')
       setSubmitting(false)
     }
   }
@@ -84,14 +80,21 @@ export default function RequestedPage() {
   if (!showMatch) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-          <Loader2 className="w-7 h-7 text-primary animate-spin" />
+        <div className="mb-6">
+          <div className="w-12 h-12 rounded-full bg-teal/10 flex items-center justify-center mx-auto">
+            <Shield className="w-6 h-6 text-teal" />
+          </div>
         </div>
-        <h1 className="text-xl font-semibold text-foreground mb-2">We&apos;ve received your request</h1>
-        <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
-          Our team is reviewing the details and finding the right Support Partner.
+        <h1 className="text-lg font-semibold text-foreground mb-3">We have received your request</h1>
+        <p className="text-base text-muted-foreground max-w-sm leading-relaxed">
+          Our team is reviewing the details and finding the right Anchor for you.
         </p>
-        <p className="text-xs text-muted-foreground/40 mt-6">You don&apos;t need to do anything right now.</p>
+        <p className="text-sm text-muted-foreground/40 mt-8">
+          <span className="inline-flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-teal/60 animate-pulse" />
+            You do not need to do anything right now.
+          </span>
+        </p>
       </div>
     )
   }
@@ -99,9 +102,9 @@ export default function RequestedPage() {
   if (!partner) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 text-center">
-        <h1 className="text-xl font-semibold text-foreground mb-2">Something went wrong</h1>
-        <p className="text-sm text-muted-foreground">Please try again.</p>
-        <button onClick={() => router.push('/book')} className="mt-6 text-sm text-primary font-medium">
+        <h1 className="text-lg font-semibold text-foreground mb-2">Something went wrong</h1>
+        <p className="text-base text-muted-foreground">Please try again.</p>
+        <button onClick={() => router.push('/book')} className="mt-6 text-base text-teal font-medium">
           Start again
         </button>
       </div>
@@ -110,53 +113,51 @@ export default function RequestedPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="flex-1 max-w-lg mx-auto w-full px-5 pt-10 pb-12 flex flex-col">
+      <div className="flex-1 max-w-xl mx-auto w-full px-6 pt-6 pb-12 flex flex-col">
 
         <div className="text-center mb-6">
-          <span className="inline-flex items-center gap-1.5 bg-accent/10 text-accent text-[10px] font-medium px-3 py-1 rounded-full tracking-wide">
-            <Sparkles className="w-3 h-3" /> Your match is ready
+          <span className="inline-flex items-center gap-2 bg-teal/10 text-teal text-sm font-medium px-4 py-1.5 rounded-full">
+            <Sparkles className="w-4 h-4" /> FAMILY VOUCHED
           </span>
         </div>
 
-        <div className="bg-card rounded-3xl border border-border overflow-hidden">
-          <div className="bg-gradient-to-br from-primary/[0.04] to-accent/[0.04] p-6 text-center border-b border-border">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 mx-auto mb-3 flex items-center justify-center">
+        <div className="bg-card rounded-3xl border-2 border-border/80 overflow-hidden">
+          <div className="bg-gradient-to-br from-teal/[0.04] to-navy/[0.04] p-8 text-center border-b border-border/60">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-teal/20 to-navy/20 mx-auto mb-4 flex items-center justify-center shadow-lg">
               {partner.avatarUrl ? (
-                <img src={partner.avatarUrl} alt={partner.name} className="w-20 h-20 rounded-full object-cover" />
+                <img src={partner.avatarUrl} alt={partner.name} className="w-24 h-24 rounded-full object-cover" />
               ) : (
-                <span className="text-2xl font-semibold text-primary">{partner.name.charAt(0)}</span>
+                <span className="text-3xl font-bold text-teal">{partner.name.charAt(0)}</span>
               )}
             </div>
-            <h2 className="text-lg font-semibold text-foreground">{partner.name}</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">{partner.supportLabel || 'Support Partner'}</p>
-            <div className="flex items-center justify-center gap-3 mt-2">
-              <span className="text-xs text-muted-foreground">{partner.completedJourneys} completed journeys</span>
+            <h2 className="text-xl font-bold text-foreground">{partner.name}</h2>
+            <p className="text-base text-muted-foreground mt-1">{partner.supportLabel || 'Support Partner'}</p>
+            <div className="flex items-center justify-center gap-2 mt-3">
+              <Shield className="w-4 h-4 text-teal/60" />
+              <span className="text-sm text-muted-foreground">FAMILY VOUCHED</span>
               <span className="text-muted-foreground/30">·</span>
-              <span className="flex items-center gap-1 text-xs">
-                <Shield className="w-3 h-3 text-primary/60" />
-                <span className="text-muted-foreground">Verified</span>
-              </span>
+              <span className="text-sm text-muted-foreground">{partner.completedJourneys} journeys</span>
             </div>
           </div>
 
-          <div className="p-5 space-y-4">
+          <div className="p-6 space-y-4">
             <div>
-              <p className="text-xs text-muted-foreground font-medium mb-1">Languages</p>
-              <div className="flex flex-wrap gap-1.5">
+              <p className="text-sm text-muted-foreground font-medium mb-1.5">Languages</p>
+              <div className="flex flex-wrap gap-2">
                 {partner.languages.map((lang) => (
-                  <span key={lang} className="text-[10px] bg-muted text-muted-foreground px-2.5 py-1 rounded-full capitalize">{lang}</span>
+                  <span key={lang} className="text-sm bg-muted text-foreground px-3 py-1.5 rounded-xl capitalize">{lang}</span>
                 ))}
               </div>
             </div>
 
             <div>
-              <p className="text-xs text-muted-foreground font-medium mb-1">About</p>
-              <p className="text-sm text-foreground leading-relaxed">{partner.bio}</p>
+              <p className="text-sm text-muted-foreground font-medium mb-1.5">About</p>
+              <p className="text-base text-foreground leading-relaxed">{partner.bio}</p>
             </div>
 
-            <div className="bg-primary/[0.04] rounded-2xl p-4">
-              <p className="text-[11px] font-medium text-foreground/80 mb-1">Why we chose {partner.name.split(' ')[0]}</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
+            <div className="bg-teal/[0.04] rounded-2xl p-5 border border-teal/10">
+              <p className="text-sm font-medium text-teal mb-1">Why we chose {partner.name.split(' ')[0]}</p>
+              <p className="text-base text-muted-foreground leading-relaxed">
                 {partner.tags.includes('healthcare') || partner.tags.includes('medical')
                   ? 'Experienced with hospital visits and medical appointments.'
                   : partner.tags.includes('government')
@@ -169,23 +170,26 @@ export default function RequestedPage() {
           </div>
         </div>
 
-        <div className="mt-3 flex items-center justify-center gap-2">
-          <Shield className="w-3 h-3 text-muted-foreground/40" />
-          <span className="text-[10px] text-muted-foreground/40">Verified & background-checked</span>
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <Shield className="w-4 h-4 text-teal/60" />
+          <span className="text-sm text-muted-foreground/60">FAMILY VOUCHED &amp; background-checked</span>
         </div>
 
         <button
           onClick={handleSecure}
           disabled={submitting}
-          className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-semibold hover:opacity-90 transition-all disabled:opacity-40 flex items-center justify-center gap-2 min-h-[52px] mt-6 text-base"
+          className="w-full bg-teal text-white py-5 px-8 rounded-2xl font-bold text-lg hover:opacity-90 transition-all disabled:opacity-40 min-h-[60px] mt-6 shadow-lg"
         >
           {submitting ? (
-            <><Loader2 className="w-5 h-5 animate-spin" /> Securing your match...</>
+            <span className="inline-flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-white/60 animate-pulse" />
+              Securing your Anchor...
+            </span>
           ) : (
-            <><Users className="w-5 h-5" /> Login via Google to secure {partner.name.split(' ')[0]}</>
+            'Secure my Partner'
           )}
         </button>
-        <p className="text-[10px] text-muted-foreground/30 text-center mt-2">Sign in to confirm your Support Partner.</p>
+        <p className="text-sm text-muted-foreground/40 text-center mt-3">Sign in with Google to confirm your Anchor.</p>
 
       </div>
     </div>

@@ -82,6 +82,7 @@ export async function GET(request: Request) {
           meeting_location: draft.location || '',
           date,
           time,
+          duration: draft.durationHours ? `${draft.durationHours} hours` : null,
           preferred_gender: draft.preferredGender === 'female' ? 'female' : draft.preferredGender === 'male' ? 'male' : 'no-preference',
           status: 'requested',
           created_at: new Date().toISOString(),

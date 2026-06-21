@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -41,7 +41,8 @@ export async function GET(request: Request) {
         time = parts[1]?.slice(0, 5)
       }
 
-      const { error: insertError } = await supabase
+      const admin = createAdminClient()
+      const { error: insertError } = await admin
         .from('requests')
         .insert({
           customer_id: user.id,

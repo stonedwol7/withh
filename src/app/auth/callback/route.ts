@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const redirectTo = searchParams.get('redirectTo') ?? '/dashboard'
+  const redirectTo = searchParams.get('redirectTo') ?? '/journey'
 
   if (!code) {
     return NextResponse.redirect(`${origin}/login?error=missing_code`)
@@ -33,16 +33,27 @@ export async function GET(request: Request) {
     try {
       const draft = JSON.parse(decodeURIComponent(pendingBookingRaw))
 
+      let date = null as string | null
+      let time = null as string | null
+      if (draft.scheduledAt) {
+        const parts = draft.scheduledAt.split('T')
+        date = parts[0]
+        time = parts[1]?.slice(0, 5)
+      }
+
       const { error: insertError } = await supabase
-        .from('bookings')
+        .from('requests')
         .insert({
           customer_id: user.id,
           category: 'companionship',
-          principal_name: 'Myself',
-          exact_meeting_spot: draft.location || '',
-          scheduled_at: draft.scheduledAt,
-          requires_female_partner: draft.preferredGender === 'female',
-          notes: draft.userNeedDescription || null,
+          description: draft.userNeedDescription || null,
+          meeting_location: draft.location || '',
+          date,
+          time,
+          preferred_gender: draft.preferredGender === 'female' ? 'female' : draft.preferredGender === 'male' ? 'male' : 'no-preference',
+          status: 'requested',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         } as any)
 
       if (insertError) {

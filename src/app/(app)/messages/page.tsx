@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Shield, CheckCircle, Users, Sparkles, MessageSquare } from 'lucide-react'
+import { Shield, CheckCircle, Users, Sparkles, MessageSquare, AlertCircle } from 'lucide-react'
 import { redirect } from 'next/navigation'
 
 const EVENT_ICONS: Record<string, any> = {
@@ -24,7 +24,7 @@ export default async function MessagesPage() {
 
   if (!user) redirect('/login')
 
-  const { data: rawRequests } = await (supabase as any)
+  const { data: rawRequests, error: reqError } = await (supabase as any)
     .from('requests')
     .select('id')
     .eq('customer_id', user.id)
@@ -33,7 +33,7 @@ export default async function MessagesPage() {
 
   const requestIds = ((rawRequests || []) as any[]).map((r: any) => r.id)
 
-  const { data: rawEvents } = await (supabase as any)
+  const { data: rawEvents, error: evtError } = await (supabase as any)
     .from('journey_events')
     .select('*')
     .in('request_id', requestIds.length > 0 ? requestIds : ['none'])
@@ -47,19 +47,31 @@ export default async function MessagesPage() {
       <h1 className="text-2xl font-semibold text-foreground tracking-tight mb-1">Messages</h1>
       <p className="text-sm text-muted-foreground mb-8">Journey updates.</p>
 
-      {(!events || events.length === 0) ? (
+      {(reqError || evtError) && (
+        <div className="bg-red/5 border border-red/10 rounded-2xl p-4 flex items-start gap-3 mb-6">
+          <AlertCircle className="w-4 h-4 text-red shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-medium text-red">Could not load updates</p>
+            <p className="text-[10px] text-red/60 mt-0.5">Please try again later.</p>
+          </div>
+        </div>
+      )}
+
+      {!reqError && !evtError && events.length === 0 ? (
         <div className="text-center py-16">
-          <MessageSquare className="w-8 h-8 text-muted-foreground/20 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground/50">No updates yet.</p>
-          <p className="text-xs text-muted-foreground/30 mt-1">Submit a request to see updates here.</p>
+          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+            <MessageSquare className="w-5 h-5 text-muted-foreground/30" />
+          </div>
+          <p className="text-sm text-muted-foreground/50">No updates yet</p>
+          <p className="text-xs text-muted-foreground/30 mt-1">Submit a support request to see updates here.</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {events.map((event) => {
+        <div className="space-y-2">
+          {events.map((event: any) => {
             const Icon = EVENT_ICONS[event.event_type] || Shield
             return (
-              <div key={event.id} className="bg-card rounded-2xl border border-border p-4 flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <div key={event.id} className="bg-card rounded-2xl border border-border p-4 flex items-start gap-3 transition-all hover:border-primary/20">
+                <div className="w-9 h-9 rounded-xl bg-primary/5 flex items-center justify-center shrink-0">
                   <Icon className="w-4 h-4 text-primary" />
                 </div>
                 <div className="min-w-0">
@@ -69,7 +81,9 @@ export default async function MessagesPage() {
                     <p className="text-xs text-muted-foreground/60 mt-0.5">{event.notes}</p>
                   )}
                   <p className="text-[10px] text-muted-foreground/50 mt-0.5">
-                    {event.created_at ? new Date(event.created_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                    {event.created_at
+                      ? new Date(event.created_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+                      : ''}
                   </p>
                 </div>
               </div>

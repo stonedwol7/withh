@@ -1,24 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { Shield, CheckCircle, Clock, Users, Loader2 } from 'lucide-react'
+import { CheckCircle, Clock, Loader2, ArrowRight, AlertCircle } from 'lucide-react'
 import { redirect } from 'next/navigation'
-
-const EVENT_ICONS: Record<string, any> = {
-  request_created: Shield,
-  under_review: Clock,
-  partner_assigned: Users,
-  partner_accepted: Users,
-  journey_started: Clock,
-  journey_completed: CheckCircle,
-}
-
-const EVENT_LABELS: Record<string, string> = {
-  request_created: 'Request received',
-  under_review: 'Reviewing details',
-  partner_assigned: 'Partner assigned',
-  partner_accepted: 'Partner accepted',
-  journey_started: 'Support started',
-  journey_completed: 'Support completed',
-}
+import Link from 'next/link'
 
 export default async function JourneyPage() {
   const supabase = await createClient()
@@ -26,12 +9,12 @@ export default async function JourneyPage() {
 
   if (!user) redirect('/login')
 
-  const { data: rawRequests } = await supabase
+  const { data: rawRequests, error } = await (supabase as any)
     .from('requests')
     .select('*')
     .eq('customer_id', user.id)
     .order('created_at', { ascending: false })
-    .limit(5)
+    .limit(10)
 
   const requests = (rawRequests || []) as any[]
 
@@ -40,54 +23,77 @@ export default async function JourneyPage() {
       <h1 className="text-2xl font-semibold text-foreground tracking-tight mb-1">Journey</h1>
       <p className="text-sm text-muted-foreground mb-8">What&apos;s happening next.</p>
 
-      {(!requests || requests.length === 0) ? (
+      {error && (
+        <div className="bg-red/5 border border-red/10 rounded-2xl p-4 flex items-start gap-3 mb-6">
+          <AlertCircle className="w-4 h-4 text-red shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-medium text-red">Something went wrong</p>
+            <p className="text-[10px] text-red/60 mt-0.5">Could not load your requests. Please try again.</p>
+          </div>
+        </div>
+      )}
+
+      {!error && requests.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-sm text-muted-foreground/50">No requests yet.</p>
-          <p className="text-xs text-muted-foreground/30 mt-1">Submit a request to see your journey here.</p>
+          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+            <Clock className="w-5 h-5 text-muted-foreground/30" />
+          </div>
+          <p className="text-sm text-muted-foreground/50">No journeys yet</p>
+          <p className="text-xs text-muted-foreground/30 mt-1">Submit a support request to get started.</p>
         </div>
       ) : (
-        <div className="space-y-6">
-          {requests.map((req) => {
+        <div className="space-y-3">
+          {requests.map((req: any) => {
             const statusSteps = [
-              { key: 'requested', label: 'Request received' },
-              { key: 'assigned', label: 'Partner assigned' },
-              { key: 'in-progress', label: 'Support started' },
-              { key: 'completed', label: 'Support completed' },
+              { key: 'requested', label: 'Received' },
+              { key: 'assigned', label: 'Assigned' },
+              { key: 'in-progress', label: 'In progress' },
+              { key: 'completed', label: 'Completed' },
             ]
 
             const currentIdx = statusSteps.findIndex((s) => s.key === req.status)
 
             return (
-              <div key={req.id} className="bg-card rounded-2xl border border-border p-4">
-                <p className="text-sm font-medium text-foreground mb-3">
-                  {req.description?.slice(0, 60)}{req.description && req.description.length > 60 ? '...' : ''}
-                </p>
+              <Link
+                key={req.id}
+                href={`/journey/${req.id}`}
+                className="block bg-card rounded-2xl border border-border p-4 hover:border-primary/20 transition-all card-hover"
+              >
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <p className="text-sm font-medium text-foreground leading-snug line-clamp-2">
+                    {req.description || 'Support request'}
+                  </p>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground/30 shrink-0 mt-0.5" />
+                </div>
+
                 <p className="text-[10px] text-muted-foreground/50 mb-4">
-                  {req.date || ''}{req.time ? ` at ${req.time}` : ''}
+                  {req.date || ''}{req.time ? ` at ${req.time?.slice(0, 5)}` : ''}
+                  {req.meeting_location ? ` · ${req.meeting_location}` : ''}
                 </p>
-                <div className="space-y-3">
+
+                <div className="flex items-center gap-3">
                   {statusSteps.map((step, i) => {
                     const status = i < currentIdx ? 'done' : i === currentIdx ? 'current' : 'upcoming'
                     const Icon = status === 'done' ? CheckCircle : status === 'current' ? Loader2 : Clock
                     return (
-                      <div key={step.key} className="flex items-center gap-3">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+                      <div key={step.key} className="flex items-center gap-1.5">
+                        <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
                           status === 'done' ? 'bg-primary/10 text-primary' :
                           status === 'current' ? 'bg-accent/10 text-accent' :
-                          'bg-muted text-muted-foreground/30'
+                          'bg-muted'
                         }`}>
-                          <Icon className={`w-3 h-3 ${status === 'current' ? 'animate-spin' : ''}`} />
+                          <Icon className={`w-2.5 h-2.5 ${status === 'current' ? 'animate-spin' : ''}`} />
                         </div>
-                        <span className={`text-xs ${
-                          status === 'done' ? 'text-foreground' :
+                        <span className={`text-[9px] ${
+                          status === 'done' ? 'text-foreground/80' :
                           status === 'current' ? 'text-accent font-medium' :
-                          'text-muted-foreground/40'
+                          'text-muted-foreground/30'
                         }`}>{step.label}</span>
                       </div>
                     )
                   })}
                 </div>
-              </div>
+              </Link>
             )
           })}
         </div>

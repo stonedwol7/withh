@@ -50,6 +50,20 @@ export async function GET(request: Request) {
   if (pendingBookingRaw) {
     try {
       const draft = JSON.parse(decodeURIComponent(pendingBookingRaw))
+      if (draft.trustedContact) {
+        await admin.from('customers').update({
+          emergency_contact: { name: draft.trustedContact },
+          updated_at: new Date().toISOString(),
+        } as any).eq('auth_id', user.id)
+      }
+    } catch {
+      /* non-critical */
+    }
+  }
+
+  if (pendingBookingRaw) {
+    try {
+      const draft = JSON.parse(decodeURIComponent(pendingBookingRaw))
 
       let date = null as string | null
       let time = null as string | null

@@ -96,5 +96,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true })
   }
 
+  if (action === 'verify_partner') {
+    const { partner_id, status } = body
+    if (!partner_id || !status) {
+      return NextResponse.json({ error: 'partner_id and status required' }, { status: 400 })
+    }
+    if (!['verified', 'rejected'].includes(status)) {
+      return NextResponse.json({ error: 'status must be verified or rejected' }, { status: 400 })
+    }
+
+    const { error } = await admin
+      .from('support_partners')
+      .update({ verification_status: status, updated_at: new Date().toISOString() } as any)
+      .eq('id', partner_id)
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: true })
+  }
+
   return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
 }

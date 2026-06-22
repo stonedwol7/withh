@@ -90,6 +90,17 @@ export default function OpsPage() {
     loadAll()
   }, [])
 
+  const verifyPartner = useCallback(async (partnerId: string, status: string) => {
+    const res = await fetch('/api/ops', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'verify_partner', partner_id: partnerId, status }),
+    })
+    if (!res.ok) { toast.error('Failed to update partner'); return }
+    toast.success(`Partner ${status}`)
+    loadAll()
+  }, [])
+
   const updateStatus = useCallback(async (requestId: string, status: string) => {
     const res = await fetch('/api/ops', {
       method: 'POST',
@@ -141,7 +152,7 @@ export default function OpsPage() {
         ) : tab === 'requests' ? (
           <RequestsView requests={requests} partners={partners} onAssign={assignPartner} onStatus={updateStatus} />
         ) : tab === 'partners' ? (
-          <PartnersView partners={partners} />
+          <PartnersView partners={partners} onVerify={verifyPartner} />
         ) : (
           <AssignmentsView assignments={assignments} />
         )}
@@ -246,11 +257,46 @@ function RequestsView({ requests, partners, onAssign, onStatus }: {
   )
 }
 
-function PartnersView({ partners }: { partners: Partner[] }) {
+function PartnersView({ partners, onVerify }: { partners: Partner[]; onVerify: (pid: string, status: string) => void }) {
+  const pending = partners.filter((p) => p.verification_status === 'pending')
+
   return (
     <div className="space-y-3">
-      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{partners.length} partners</p>
-      {partners.map((p) => (
+      {pending.length > 0 && (
+        <>
+          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider text-amber">{pending.length} pending review</p>
+          {pending.map((p) => (
+            <div key={p.id} className="bg-card rounded-xl border border-amber/20 p-4">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{p.name}</p>
+                  <p className="text-xs text-muted-foreground">{p.email} {p.phone && <span>&middot; {p.phone}</span>}</p>
+                </div>
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber/10 text-amber capitalize">{p.verification_status}</span>
+              </div>
+              <div className="flex flex-wrap gap-1 mb-2">
+                {p.specialties?.map((s) => (
+                  <span key={s} className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded capitalize">{s}</span>
+                ))}
+              </div>
+              <p className="text-xs text-foreground/60 line-clamp-2 mb-3">{p.bio}</p>
+              <div className="flex items-center gap-2">
+                <button onClick={() => onVerify(p.id, 'verified')}
+                  className="text-xs bg-green/10 text-green px-3 py-1.5 rounded-lg font-medium hover:bg-green/20 transition-colors">
+                  Approve
+                </button>
+                <button onClick={() => onVerify(p.id, 'rejected')}
+                  className="text-xs bg-destructive/10 text-destructive px-3 py-1.5 rounded-lg font-medium hover:bg-destructive/20 transition-colors">
+                  Reject
+                </button>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
+      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-4">{partners.length} total partners</p>
+      {partners.filter((p) => p.verification_status !== 'pending').map((p) => (
         <div key={p.id} className="bg-card rounded-xl border border-border p-4">
           <div className="flex items-start justify-between mb-2">
             <div>
@@ -259,7 +305,6 @@ function PartnersView({ partners }: { partners: Partner[] }) {
             </div>
             <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full capitalize ${
               p.verification_status === 'verified' ? 'bg-green/10 text-green' :
-              p.verification_status === 'pending' ? 'bg-amber/10 text-amber' :
               p.verification_status === 'rejected' ? 'bg-red/10 text-red' :
               'bg-muted text-muted-foreground'
             }`}>{p.verification_status}</span>

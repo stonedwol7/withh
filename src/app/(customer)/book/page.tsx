@@ -6,16 +6,9 @@ import { createClient } from '@/lib/supabase/client'
 import { useBookingStore, HOURLY_RATE } from '@/lib/store/booking-store'
 import { parseIntent } from '@/lib/intent-parser'
 import { findBestMatch } from '@/lib/partner-matching'
-import { ArrowLeft, User, Heart, Shield } from 'lucide-react'
+import { ArrowLeft, User, Heart } from 'lucide-react'
 
 type Step = 'who' | 'describe' | 'when' | 'reveal'
-
-const STEP_LABELS: Record<Step, string> = {
-  who: 'Who needs support today?',
-  describe: 'Tell us about the situation',
-  when: 'When & how long?',
-  reveal: 'Your Anchor',
-}
 
 export default function BookPage() {
   const router = useRouter()
@@ -45,9 +38,7 @@ export default function BookPage() {
   const handleDescribeNext = useCallback(async () => {
     if (!needInput.trim()) return
     setField('userNeedDescription', needInput.trim())
-
     setMatching(true)
-
     try {
       const intent = parseIntent(needInput)
       const partner = await findBestMatch(intent, '')
@@ -137,75 +128,72 @@ export default function BookPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-xl border-b border-border/60 px-6 h-16 flex items-center gap-4">
-        <button onClick={goBack} className="p-2 -ml-2 rounded-xl hover:bg-muted transition-colors">
-          <ArrowLeft className="w-5 h-5 text-foreground" />
+      <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-xl border-b border-border/50 px-4 h-12 flex items-center gap-3">
+        <button onClick={goBack} className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted transition-colors">
+          <ArrowLeft className="w-4 h-4 text-foreground/60" />
         </button>
-        <div className="flex-1 text-center">
-          <span className="text-xs text-muted-foreground font-medium tracking-wide">
-            Step {['who', 'describe', 'when', 'reveal'].indexOf(step) + 1} of 4
-          </span>
-        </div>
-        <div className="w-9" />
+        <div className="flex-1" />
+        <span className="text-xs text-muted-foreground/50 font-medium">
+          Step {['who', 'describe', 'when', 'reveal'].indexOf(step) + 1} of 4
+        </span>
       </header>
 
-      <div className="flex-1 max-w-xl mx-auto w-full px-6 pt-6 pb-16">
+      <div className="flex-1 max-w-lg mx-auto w-full px-4 pt-6 pb-12">
 
-        {/* Step 1: Who is this for? */}
         {step === 'who' && (
-          <div className="animate-fade-in">
-            <h1 className="text-lg font-semibold text-foreground mb-2">Who needs support today?</h1>
-            <p className="text-base text-muted-foreground mb-8">We will match you with the right Anchor.</p>
+          <div>
+            <h1 className="text-lg font-semibold text-foreground mb-1">Who needs support today?</h1>
+            <p className="text-sm text-muted-foreground mb-6">We will match you with the right person.</p>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <button
                 onClick={() => { setField('forWhom', 'myself'); setNameInput('') }}
-                className={`w-full bg-card rounded-2xl border-2 p-6 flex items-center gap-5 text-left transition-all ${
-                  draft.forWhom === 'myself' ? 'border-teal ring-2 ring-teal/20' : 'border-border/80 hover:border-teal/30'
+                className={`w-full bg-card rounded-xl border p-4 flex items-center gap-4 text-left transition-all ${
+                  draft.forWhom === 'myself' ? 'border-foreground ring-1 ring-foreground/10' : 'border-border/70 hover:border-foreground/20'
                 }`}
               >
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
-                  draft.forWhom === 'myself' ? 'bg-teal/10 text-teal' : 'bg-muted text-muted-foreground'
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+                  draft.forWhom === 'myself' ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground'
                 }`}>
-                  <User className="w-7 h-7" />
+                  <User className="w-5 h-5" />
                 </div>
-                <div>
-                  <p className="text-base font-semibold text-foreground">Booking for Myself</p>
-                  <p className="text-sm text-muted-foreground mt-1">I need support for my own journey</p>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">Booking for Myself</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">I need support for my own journey</p>
                 </div>
                 {draft.forWhom === 'myself' && (
-                  <div className="w-6 h-6 rounded-full bg-teal flex items-center justify-center ml-auto shrink-0">
-                    <div className="w-2.5 h-2.5 rounded-full bg-white" />
+                  <div className="w-5 h-5 rounded-full bg-foreground flex items-center justify-center shrink-0">
+                    <div className="w-2 h-2 rounded-full bg-background" />
                   </div>
                 )}
               </button>
 
               <button
                 onClick={() => setField('forWhom', 'lovedOne')}
-                className={`w-full bg-card rounded-2xl border-2 p-6 flex items-center gap-5 text-left transition-all ${
-                  draft.forWhom === 'lovedOne' ? 'border-teal ring-2 ring-teal/20' : 'border-border/80 hover:border-teal/30'
+                className={`w-full bg-card rounded-xl border p-4 flex items-center gap-4 text-left transition-all ${
+                  draft.forWhom === 'lovedOne' ? 'border-foreground ring-1 ring-foreground/10' : 'border-border/70 hover:border-foreground/20'
                 }`}
               >
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
-                  draft.forWhom === 'lovedOne' ? 'bg-teal/10 text-teal' : 'bg-muted text-muted-foreground'
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+                  draft.forWhom === 'lovedOne' ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground'
                 }`}>
-                  <Heart className="w-7 h-7" />
+                  <Heart className="w-5 h-5" />
                 </div>
-                <div>
-                  <p className="text-base font-semibold text-foreground">Booking for a Loved One</p>
-                  <p className="text-sm text-muted-foreground mt-1">I am requesting for family or a friend</p>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">Booking for a Loved One</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">I am requesting for family or a friend</p>
                 </div>
                 {draft.forWhom === 'lovedOne' && (
-                  <div className="w-6 h-6 rounded-full bg-teal flex items-center justify-center ml-auto shrink-0">
-                    <div className="w-2.5 h-2.5 rounded-full bg-white" />
+                  <div className="w-5 h-5 rounded-full bg-foreground flex items-center justify-center shrink-0">
+                    <div className="w-2 h-2 rounded-full bg-background" />
                   </div>
                 )}
               </button>
             </div>
 
             {draft.forWhom === 'lovedOne' && (
-              <div className="mt-6 animate-fade-in">
-                <label htmlFor="lovedOneName" className="text-sm font-medium text-muted-foreground mb-2 block">
+              <div className="mt-4">
+                <label htmlFor="lovedOneName" className="text-xs font-medium text-muted-foreground mb-1.5 block">
                   What is their name?
                 </label>
                 <input
@@ -213,7 +201,7 @@ export default function BookPage() {
                   value={nameInput}
                   onChange={(e) => setNameInput(e.target.value)}
                   placeholder="e.g., My mother, Ananya"
-                  className="w-full bg-card border-2 border-border/80 rounded-2xl py-4 px-5 text-base focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal/20 transition-all min-h-[56px]"
+                  className="w-full bg-card border border-border/70 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-foreground/40 focus:ring-1 focus:ring-foreground/10 transition-all"
                 />
               </div>
             )}
@@ -221,88 +209,79 @@ export default function BookPage() {
             <button
               onClick={handleWhoNext}
               disabled={draft.forWhom === null || (draft.forWhom === 'lovedOne' && !nameInput.trim())}
-              className="w-full bg-teal text-white py-4 px-8 rounded-2xl font-semibold text-base hover:opacity-90 transition-all disabled:opacity-30 min-h-[56px] mt-8"
+              className="w-full bg-foreground text-background py-3.5 px-6 rounded-xl font-medium text-sm hover:bg-foreground/90 transition-all disabled:opacity-25 mt-6 active:scale-[0.98]"
             >
               Continue
             </button>
           </div>
         )}
 
-        {/* Step 2: Describe the need */}
         {step === 'describe' && (
-          <div className="animate-fade-in">
-            <h1 className="text-lg font-semibold text-foreground mb-2">Tell us what kind of support is needed today.</h1>
-            <p className="text-base text-muted-foreground mb-6">Describe the situation in your own words.</p>
+          <div>
+            <h1 className="text-lg font-semibold text-foreground mb-1">Tell us about the situation</h1>
+            <p className="text-sm text-muted-foreground mb-5">Describe what kind of support is needed today.</p>
 
             <textarea
               value={needInput}
               onChange={(e) => setNeedInput(e.target.value)}
               placeholder="I need someone to accompany my mother to a hospital appointment tomorrow. She only speaks Kannada."
               rows={5}
-              className="w-full bg-card border-2 border-border/80 rounded-2xl py-4 px-5 text-base focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal/20 transition-all resize-none min-h-[160px]"
+              className="w-full bg-card border border-border/70 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-foreground/40 focus:ring-1 focus:ring-foreground/10 transition-all resize-none"
               autoFocus
             />
 
             <button
               onClick={handleDescribeNext}
               disabled={!needInput.trim() || matching}
-              className="w-full bg-teal text-white py-4 px-8 rounded-2xl font-semibold text-base hover:opacity-90 transition-all disabled:opacity-30 min-h-[56px] mt-8"
+              className="w-full bg-foreground text-background py-3.5 px-6 rounded-xl font-medium text-sm hover:bg-foreground/90 transition-all disabled:opacity-25 mt-5 active:scale-[0.98]"
             >
-              {matching ? (
-                <span className="inline-flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-white/60 animate-pulse" />
-                  Finding the right Anchor for you...
-                </span>
-              ) : (
-                'Continue'
-              )}
+              {matching ? 'Finding the right person...' : 'Continue'}
             </button>
           </div>
         )}
 
-        {/* Step 3: When & how long */}
         {step === 'when' && (
-          <div className="animate-fade-in">
-            <h1 className="text-lg font-semibold text-foreground mb-2">When and where?</h1>
-            <p className="text-base text-muted-foreground mb-6">Set the details and choose your duration.</p>
+          <div>
+            <h1 className="text-lg font-semibold text-foreground mb-1">When and where?</h1>
+            <p className="text-sm text-muted-foreground mb-5">Set the details and choose how long you need support.</p>
 
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div>
-                <label htmlFor="book-date" className="text-sm font-medium text-muted-foreground mb-2 block">Date</label>
+                <label htmlFor="book-date" className="text-xs font-medium text-muted-foreground mb-1.5 block">Date</label>
                 <input
                   id="book-date"
                   type="date"
                   value={dateInput}
                   onChange={(e) => setDateInput(e.target.value)}
-                  className="w-full bg-card border-2 border-border/80 rounded-2xl py-4 px-5 text-base focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal/20 transition-all min-h-[56px]"
+                  className="w-full bg-card border border-border/70 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-foreground/40 focus:ring-1 focus:ring-foreground/10 transition-all"
                 />
               </div>
 
               <div>
-                <label htmlFor="book-time" className="text-sm font-medium text-muted-foreground mb-2 block">Time</label>
+                <label htmlFor="book-time" className="text-xs font-medium text-muted-foreground mb-1.5 block">Time</label>
                 <input
                   id="book-time"
                   type="time"
                   value={timeInput}
                   onChange={(e) => setTimeInput(e.target.value)}
-                  className="w-full bg-card border-2 border-border/80 rounded-2xl py-4 px-5 text-base focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal/20 transition-all min-h-[56px]"
+                  className="w-full bg-card border border-border/70 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-foreground/40 focus:ring-1 focus:ring-foreground/10 transition-all"
                 />
               </div>
 
               <div>
-                <label htmlFor="book-location" className="text-sm font-medium text-muted-foreground mb-2 block">Where should they meet you?</label>
+                <label htmlFor="book-location" className="text-xs font-medium text-muted-foreground mb-1.5 block">Where should they meet you?</label>
                 <input
                   id="book-location"
                   value={locationInput}
                   onChange={(e) => setLocationInput(e.target.value)}
                   placeholder="e.g., Gate 3, Manipal Hospital, Bangalore"
-                  className="w-full bg-card border-2 border-border/80 rounded-2xl py-4 px-5 text-base focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal/20 transition-all min-h-[56px]"
+                  className="w-full bg-card border border-border/70 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-foreground/40 focus:ring-1 focus:ring-foreground/10 transition-all"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  How much time? <span className="text-teal font-semibold">{hours} {hours === 1 ? 'hour' : 'hours'}</span>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                  How much time? <span className="text-foreground font-semibold">{hours} {hours === 1 ? 'hour' : 'hours'}</span>
                 </label>
                 <input
                   type="range"
@@ -311,86 +290,74 @@ export default function BookPage() {
                   step={1}
                   value={hours}
                   onChange={(e) => setHours(Number(e.target.value))}
-                  className="w-full h-3 bg-muted rounded-full appearance-none cursor-pointer accent-teal [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-7 [&::-webkit-slider-thumb]:h-7 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-teal [&::-webkit-slider-thumb]:shadow-lg"
+                  className="w-full h-2 bg-muted rounded-full appearance-none cursor-pointer accent-foreground [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:shadow-md"
                 />
-                <div className="flex justify-between text-sm text-muted-foreground/60 mt-2">
+                <div className="flex justify-between text-xs text-muted-foreground/40 mt-1">
                   <span>1 hr</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8 hrs</span>
                 </div>
               </div>
 
-              <div className="bg-card rounded-2xl border-2 border-teal/20 p-5">
+              <div className="bg-card rounded-xl border border-border/70 p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-base text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     <span className="font-semibold text-foreground">₹{HOURLY_RATE}</span> / hr &times; {hours} {hours === 1 ? 'hr' : 'hrs'}
                   </span>
-                  <span className="text-2xl font-bold text-foreground">₹{totalPrice}</span>
+                  <span className="text-xl font-semibold text-foreground">₹{totalPrice}</span>
                 </div>
-                <p className="text-sm text-muted-foreground/50 mt-1">Flat rate. No hidden fees.</p>
+                <p className="text-xs text-muted-foreground/50 mt-0.5">Flat rate. No hidden fees.</p>
               </div>
             </div>
 
             <button
               onClick={handleWhenNext}
               disabled={!dateInput || !timeInput || !locationInput.trim()}
-              className="w-full bg-teal text-white py-4 px-8 rounded-2xl font-semibold text-base hover:opacity-90 transition-all disabled:opacity-30 min-h-[56px] mt-8"
+              className="w-full bg-foreground text-background py-3.5 px-6 rounded-xl font-medium text-sm hover:bg-foreground/90 transition-all disabled:opacity-25 mt-5 active:scale-[0.98]"
             >
               Continue
             </button>
           </div>
         )}
 
-        {/* Step 4: Partner Reveal */}
         {step === 'reveal' && (
-          <div className="animate-fade-in">
+          <div>
             {!partner ? (
-              <div className="text-center py-12">
-                <span className="inline-flex items-center gap-2 text-base text-teal font-medium">
-                  <span className="w-2.5 h-2.5 rounded-full bg-teal animate-pulse" />
-                  Finding the right Anchor for you...
-                </span>
+              <div className="text-center py-16">
+                <p className="text-sm text-muted-foreground">Finding the right person...</p>
               </div>
             ) : (
               <>
-                <div className="text-center mb-6">
-                  <span className="inline-flex items-center gap-2 bg-teal/10 text-teal text-sm font-medium px-4 py-1.5 rounded-full">
-                    <Shield className="w-4 h-4" /> FAMILY VOUCHED
-                  </span>
-                </div>
-
-                <div className="bg-card rounded-3xl border-2 border-border/80 overflow-hidden">
-                  <div className="bg-gradient-to-br from-teal/[0.04] to-navy/[0.04] p-8 text-center border-b border-border/60">
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-teal/20 to-navy/20 mx-auto mb-4 flex items-center justify-center shadow-lg">
+                <div className="bg-card rounded-2xl border border-border/70 overflow-hidden">
+                  <div className="bg-muted/50 p-6 text-center border-b border-border/50">
+                    <div className="w-20 h-20 rounded-full bg-foreground/5 mx-auto mb-3 flex items-center justify-center">
                       {partner.avatarUrl ? (
-                        <img src={partner.avatarUrl} alt={partner.name} className="w-24 h-24 rounded-full object-cover" />
+                        <img src={partner.avatarUrl} alt={partner.name} className="w-20 h-20 rounded-full object-cover" />
                       ) : (
-                        <span className="text-3xl font-bold text-teal">{partner.name.charAt(0)}</span>
+                        <span className="text-2xl font-bold text-foreground/30">{partner.name.charAt(0)}</span>
                       )}
                     </div>
-                    <h2 className="text-xl font-bold text-foreground">{partner.name}</h2>
-                    <p className="text-base text-muted-foreground mt-1">{partner.supportLabel || 'Support Partner'}</p>
-                    <div className="flex items-center justify-center gap-3 mt-3">
-                      <span className="text-sm text-muted-foreground">{partner.completedJourneys} completed journeys</span>
-                    </div>
+                    <h2 className="text-lg font-semibold text-foreground">{partner.name}</h2>
+                    <p className="text-sm text-muted-foreground mt-0.5">{partner.supportLabel || 'Support Partner'}</p>
+                    <p className="text-xs text-muted-foreground/50 mt-2">{partner.completedJourneys} completed journeys</p>
                   </div>
 
-                  <div className="p-6 space-y-4">
+                  <div className="p-5 space-y-3">
                     <div>
-                      <p className="text-sm text-muted-foreground font-medium mb-1.5">Languages</p>
-                      <div className="flex flex-wrap gap-2">
+                      <p className="text-xs text-muted-foreground font-medium mb-1">Languages</p>
+                      <div className="flex flex-wrap gap-1.5">
                         {partner.languages.map((lang) => (
-                          <span key={lang} className="text-sm bg-muted text-foreground px-3 py-1.5 rounded-xl capitalize">{lang}</span>
+                          <span key={lang} className="text-xs bg-muted text-foreground/70 px-2.5 py-1 rounded-lg capitalize">{lang}</span>
                         ))}
                       </div>
                     </div>
 
                     <div>
-                      <p className="text-sm text-muted-foreground font-medium mb-1.5">About</p>
-                      <p className="text-base text-foreground leading-relaxed">{partner.bio}</p>
+                      <p className="text-xs text-muted-foreground font-medium mb-1">About</p>
+                      <p className="text-sm text-foreground/80 leading-relaxed">{partner.bio}</p>
                     </div>
 
-                    <div className="bg-teal/[0.04] rounded-2xl p-5 border border-teal/10">
-                      <p className="text-sm font-medium text-teal mb-1">Why we chose {partner.name.split(' ')[0]}</p>
-                      <p className="text-base text-muted-foreground leading-relaxed">
+                    <div className="bg-muted/50 rounded-xl p-4">
+                      <p className="text-xs font-medium text-foreground/60 mb-0.5">Why we chose {partner.name.split(' ')[0]}</p>
+                      <p className="text-sm text-foreground/70 leading-relaxed">
                         {partner.tags.includes('healthcare') || partner.tags.includes('medical')
                           ? 'Experienced with hospital visits and medical appointments.'
                           : partner.tags.includes('government')
@@ -400,29 +367,22 @@ export default function BookPage() {
                               : 'Background and experience match what you described.'}
                       </p>
                     </div>
-                  </div>
-                </div>
 
-                <div className="mt-4 flex items-center justify-center gap-2">
-                  <Shield className="w-4 h-4 text-teal/60" />
-                  <span className="text-sm text-muted-foreground/60">FAMILY VOUCHED &amp; background-checked</span>
+                    <div className="flex items-center gap-1.5 justify-center pt-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-foreground/20" />
+                      <span className="text-xs text-muted-foreground/50">Verified & background-checked</span>
+                    </div>
+                  </div>
                 </div>
 
                 <button
                   onClick={handleSecureBooking}
                   disabled={submitting}
-                  className="w-full bg-teal text-white py-5 px-8 rounded-2xl font-bold text-lg hover:opacity-90 transition-all disabled:opacity-40 min-h-[60px] mt-6 shadow-lg"
+                  className="w-full bg-foreground text-background py-4 px-6 rounded-xl font-semibold text-sm hover:bg-foreground/90 transition-all disabled:opacity-25 mt-5 active:scale-[0.98]"
                 >
-                  {submitting ? (
-                    <span className="inline-flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-white/60 animate-pulse" />
-                      Securing your Anchor...
-                    </span>
-                  ) : (
-                    'Secure my Partner'
-                  )}
+                  {submitting ? 'Preparing your request...' : 'Confirm Request'}
                 </button>
-                <p className="text-sm text-muted-foreground/40 text-center mt-3">Sign in with Google to confirm your Anchor.</p>
+                <p className="text-xs text-muted-foreground/40 text-center mt-3">You will sign in with Google to confirm.</p>
               </>
             )}
           </div>

@@ -28,20 +28,33 @@ export async function GET(request: Request) {
 
   const admin = createAdminClient()
 
+  // Upsert customer record, return the actual customers.id
   const { data: existing } = await admin
     .from('customers')
     .select('id')
     .eq('auth_id', user.id)
     .maybeSingle()
 
-  if (!existing) {
-    await admin.from('customers').insert({
-      auth_id: user.id,
-      name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Customer',
-      email: user.email,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    } as any)
+  let customerId = existing?.id
+
+  if (!customerId) {
+    const { data: inserted } = await admin
+      .from('customers')
+      .insert({
+        auth_id: user.id,
+        name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Customer',
+        email: user.email,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as any)
+      .select('id')
+      .single()
+
+    customerId = (inserted as any)?.id
+  }
+
+  if (!customerId) {
+    return NextResponse.redirect(`${origin}/dashboard?error=no_customer`)
   }
 
   const cookieStore = await cookies()
@@ -54,7 +67,7 @@ export async function GET(request: Request) {
         await admin.from('customers').update({
           emergency_contact: { name: draft.trustedContact },
           updated_at: new Date().toISOString(),
-        } as any).eq('auth_id', user.id)
+        } as any).eq('id', customerId)
       }
     } catch {
       /* non-critical */
@@ -76,8 +89,9 @@ export async function GET(request: Request) {
       const { error: insertError } = await admin
         .from('requests')
         .insert({
-          customer_id: user.id,
+          customer_id: customerId,
           category: 'companionship',
+          principal_name: draft.principalName || 'Myself',
           description: draft.userNeedDescription || null,
           meeting_location: draft.location || '',
           date,

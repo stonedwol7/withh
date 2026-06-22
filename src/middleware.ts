@@ -37,18 +37,21 @@ export async function middleware(request: NextRequest) {
     return response
   }
 
+  const isOpsRoute = path.startsWith('/ops')
   const isPartnerRoute = path.startsWith('/partner')
+  const isPartnerKyc = path === '/partner/kyc'
   const isCustomerDashboard = path.startsWith('/dashboard')
   const isAppRoute = path.startsWith('/journey') || path.startsWith('/messages') || path.startsWith('/profile')
 
-  if ((isPartnerRoute || isCustomerDashboard || isAppRoute) && !user) {
+  if ((isPartnerRoute || isCustomerDashboard || isAppRoute || isOpsRoute) && !user) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/login'
     redirectUrl.searchParams.set('redirectTo', path)
     return NextResponse.redirect(redirectUrl)
   }
 
-  if (isPartnerRoute && user) {
+  // KYC page is exempt from partner role check — allows onboarding
+  if (isPartnerRoute && user && !isPartnerKyc) {
     const { data: partners } = await supabase
       .from('support_partners')
       .select('id')

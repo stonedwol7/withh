@@ -72,6 +72,15 @@ export default function BookPage() {
 
     if (auth.user) {
       try {
+        const { data: customers } = await supabase
+          .from('customers')
+          .select('id')
+          .eq('auth_id', auth.user.id)
+          .limit(1)
+
+        const customerId = (customers as any)?.[0]?.id
+        if (!customerId) throw new Error('no customer')
+
         let date = null as string | null
         let time = null as string | null
         if (draft.scheduledAt) {
@@ -83,7 +92,7 @@ export default function BookPage() {
         const { error: insertError } = await supabase
           .from('requests')
           .insert({
-            customer_id: auth.user.id,
+            customer_id: customerId,
             category: 'companionship',
             principal_name: draft.principalName || 'Myself',
             description: draft.userNeedDescription || null,

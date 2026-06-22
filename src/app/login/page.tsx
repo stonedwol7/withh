@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2, AlertCircle } from 'lucide-react'
+import { Loader2, AlertCircle, Briefcase } from 'lucide-react'
 import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 
@@ -125,7 +125,15 @@ function LoginForm() {
             </Link>
           </div>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
+          <div className="mt-6 pt-5 border-t border-border/60">
+            <Link href="/register?role=partner"
+              className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Briefcase className="w-4 h-4" />
+              Join as a Support Partner
+            </Link>
+          </div>
+
+          <p className="text-center text-sm text-muted-foreground mt-4">
             Don&apos;t have an account?{' '}
             <Link href="/register" className="text-copper font-medium hover:underline">Create one</Link>
           </p>

@@ -57,12 +57,13 @@ export default function LandingPage() {
         </div>
 
         <div className="mt-auto pt-12 text-center">
-          <button
-            onClick={() => router.push('/login')}
-            className="text-sm text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors"
-          >
-            Sign in
-          </button>
+          <div className="flex items-center justify-center gap-4">
+            <button onClick={() => router.push('/login')}
+              className="text-sm text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors">Sign in</button>
+            <span className="text-muted-foreground/20">·</span>
+            <button onClick={() => router.push('/register?role=partner')}
+              className="text-sm text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors">Become a Partner</button>
+          </div>
         </div>
       </div>
     </div>

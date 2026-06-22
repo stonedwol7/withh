@@ -65,7 +65,7 @@ function RegisterForm() {
       }
 
       setSubmitting(false)
-      router.push(role === 'customer' ? '/dashboard' : '/partner')
+      router.push(role === 'customer' ? '/dashboard' : '/partner/kyc')
     } catch (err: any) {
       setError(err?.message || 'Registration failed')
       setSubmitting(false)

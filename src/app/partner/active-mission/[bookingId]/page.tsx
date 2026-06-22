@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Clock, MapPin, User, Send, ChevronDown, ChevronUp, X, Loader2 } from 'lucide-react'
+import LocationMap from '@/components/maps/location-map'
 import { toast } from 'sonner'
 
 export default function ActiveMissionPage({ params }: { params: Promise<{ bookingId: string }> }) {
@@ -240,6 +241,12 @@ export default function ActiveMissionPage({ params }: { params: Promise<{ bookin
             </div>
           </div>
         </div>
+
+        {request.meeting_location && (
+          <div className="rounded-xl overflow-hidden border border-white/10">
+            <LocationMap location={request.meeting_location} height="160px" />
+          </div>
+        )}
 
         {/* Chat toggle */}
         <button

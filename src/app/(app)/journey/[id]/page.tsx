@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { ArrowLeft, Shield, CheckCircle, Clock, Users, Loader2, MapPin, Calendar, Languages, User } from 'lucide-react'
 import Link from 'next/link'
+import LocationMap from '@/components/maps/location-map'
 
 export default async function RequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -110,6 +111,16 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
           })}
         </div>
       </div>
+
+      {request.meeting_location && (
+        <div className="mt-6 bg-card rounded-3xl border border-border overflow-hidden">
+          <div className="p-4 pb-3">
+            <p className="text-xs font-semibold text-foreground/80 uppercase tracking-wide">Meeting location</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{request.meeting_location}</p>
+          </div>
+          <LocationMap location={request.meeting_location} height="200px" />
+        </div>
+      )}
     </div>
   )
 }

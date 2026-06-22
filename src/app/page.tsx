@@ -28,13 +28,6 @@ export default function LandingPage() {
           Request Support
         </button>
 
-        <button
-          onClick={() => router.push('/book')}
-          className="w-full text-center text-sm text-muted-foreground/50 hover:text-muted-foreground transition-colors mt-4 py-2"
-        >
-          Need help for someone else?
-        </button>
-
         <div className="mt-10 bg-card rounded-xl border border-border/60 p-5">
           <div className="grid grid-cols-2 gap-y-3 gap-x-5">
             <div className="flex items-center gap-2.5">

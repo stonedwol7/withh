@@ -3,8 +3,8 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, UserCircle, Briefcase, Loader2, Mail } from 'lucide-react'
 import { useState, useEffect, Suspense } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
-import { BrandSignature } from '@/components/brand/brand-signature'
 
 function RegisterForm() {
   const router = useRouter()
@@ -100,7 +100,9 @@ function RegisterForm() {
         <button onClick={() => router.back()} className="p-1.5 -ml-1.5 rounded-xl hover:bg-muted transition-colors" aria-label="Go back">
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
-        <BrandSignature markSize={16} />
+        <div className="ml-2">
+          <Image src="/logo-horizontal.png" alt="WITHH" width={80} height={20} className="object-contain" priority />
+        </div>
       </header>
 
       <div className="flex-1 max-w-md mx-auto w-full px-5 pt-6 pb-6">

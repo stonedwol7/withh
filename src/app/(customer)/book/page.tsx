@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useBookingStore, HOURLY_RATE } from '@/lib/store/booking-store'
 import { parseIntent } from '@/lib/intent-parser'
 import { findBestMatch } from '@/lib/partner-matching'
+import Image from 'next/image'
 import { ArrowLeft, User, Heart } from 'lucide-react'
 
 type Step = 'who' | 'describe' | 'when' | 'reveal'

@@ -1,14 +1,25 @@
-export function BrandWordmark({ className = '', size = 'lg' }: { className?: string; size?: 'sm' | 'md' | 'lg' | 'xl' }) {
-  const sizeClasses = {
-    sm: 'text-sm font-bold tracking-[0.15em]',
-    md: 'text-lg font-bold tracking-[0.2em]',
-    lg: 'text-2xl font-bold tracking-[0.25em]',
-    xl: 'text-5xl font-bold tracking-[0.15em]',
+import Image from 'next/image'
+
+export function BrandWordmark({ className = '', size = 'sm' }: { className?: string; size?: 'sm' | 'md' | 'lg' | 'xl' }) {
+  const dimensions = {
+    sm: { width: 80, height: 20 },
+    md: { width: 120, height: 30 },
+    lg: { width: 160, height: 40 },
+    xl: { width: 240, height: 60 },
   }
 
+  const dim = dimensions[size]
+
   return (
-    <span className={`${sizeClasses[size]} text-foreground select-none ${className}`}>
-      WITHH
+    <span className={`inline-flex items-center select-none ${className}`}>
+      <Image
+        src="/logo-horizontal.png"
+        alt="WITHH"
+        width={dim.width}
+        height={dim.height}
+        className="object-contain"
+        priority
+      />
     </span>
   )
 }

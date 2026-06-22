@@ -1,11 +1,16 @@
-import { BrandMark } from './brand-mark'
-import { BrandWordmark } from './brand-wordmark'
+import Image from 'next/image'
 
-export function BrandSignature({ className = '', markSize = 18 }: { className?: string; markSize?: number }) {
+export function BrandSignature({ className = '' }: { className?: string }) {
   return (
-    <span className={`inline-flex items-center gap-2 ${className}`}>
-      <BrandMark size={markSize} className="text-accent" />
-      <BrandWordmark size="sm" />
+    <span className={`inline-flex items-center select-none ${className}`}>
+      <Image
+        src="/logo-horizontal.png"
+        alt="WITHH"
+        width={100}
+        height={24}
+        className="object-contain"
+        priority
+      />
     </span>
   )
 }

@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2, AlertCircle, Briefcase } from 'lucide-react'
 import { useEffect, useState, Suspense } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 
 function LoginForm() {
@@ -58,8 +59,8 @@ function LoginForm() {
       <div className="flex-1 flex items-center justify-center px-5 py-8">
         <div className="w-full max-w-sm">
           <div className="text-center mb-8 md:mb-10">
-            <p className="text-2xl font-bold text-slate tracking-tight">WITHH.ME</p>
-            <p className="text-sm text-muted-foreground mt-1.5">Sign in to your account</p>
+            <Image src="/logo-horizontal.png" alt="WITHH" width={120} height={30} className="mx-auto object-contain" priority />
+            <p className="text-sm text-muted-foreground mt-3">Sign in to your account</p>
           </div>
 
           <div className="space-y-4">

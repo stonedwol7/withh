@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
 import { Clock, MapPin, LogOut, User, Hourglass } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -87,7 +88,7 @@ export default function PartnerPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 bg-background/80 backdrop-blur-xl border-b border-border px-5 h-14 flex items-center justify-between">
-        <h1 className="text-sm font-bold text-foreground">WITHH.ME</h1>
+        <Image src="/logo-horizontal.png" alt="WITHH" width={80} height={20} className="object-contain" />
         <div className="flex items-center gap-3">
           <span className="text-xs text-muted-foreground">{partnerName}</span>
           <button onClick={handleLogout} aria-label="Sign out" className="text-xs text-muted-foreground hover:text-destructive transition-colors">

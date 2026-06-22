@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
 import { toast } from 'sonner'
 
 type Tab = 'requests' | 'partners' | 'assignments'
@@ -126,7 +127,7 @@ export default function OpsPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 bg-background/80 backdrop-blur-xl border-b border-border px-5 h-14 flex items-center justify-between z-50">
-        <h1 className="text-sm font-bold text-foreground">WITHH Ops</h1>
+        <Image src="/logo-horizontal.png" alt="WITHH" width={80} height={20} className="object-contain" />
         <div className="flex items-center gap-2">
           <button onClick={() => { supabase.auth.signOut(); router.push('/') }}
             className="text-xs text-muted-foreground hover:text-destructive transition-colors">Sign out</button>

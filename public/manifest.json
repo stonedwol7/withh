@@ -1,11 +1,11 @@
 {
-  "name": "WITHH",
+  "name": "WITHH - Trusted Human Support",
   "short_name": "WITHH",
-  "description": "When you can't go alone, we'll go with you.",
-  "start_url": "/login",
+  "description": "Support from a trusted person when it matters most.",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#FAFAFA",
-  "theme_color": "#111827",
+  "background_color": "#F2F4F7",
+  "theme_color": "#0D1B3D",
   "orientation": "portrait-primary",
   "icons": [
     {
